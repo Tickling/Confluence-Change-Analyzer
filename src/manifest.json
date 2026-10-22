@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Confluence Change Analyzer",
+  "short_name": "CFA",
+  "version": "0.1.0",
+  "description": "Анализ истории изменений страниц Confluence: фильтры, подсветка, статус задач, экспорт в Word.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Confluence Change Analyzer",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "tabs", "activeTab", "scripting", "downloads"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.atlassian.net/wiki/*",
+        "*://*/wiki/*",
+        "*://*/display/*",
+        "*://*/pages/*",
+        "*://*/spaces/*",
+        "*://*/confluence/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}

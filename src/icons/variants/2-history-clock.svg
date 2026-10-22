@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Вариант 2: история изменений — часы со стрелкой «назад» и цветными строками -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="#0747A6"/>
+  <path d="M30 64a34 34 0 1 0 10-24" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  <path d="M26 26v20h20" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M64 44v22l14 10" fill="none" stroke="#FFAB00" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

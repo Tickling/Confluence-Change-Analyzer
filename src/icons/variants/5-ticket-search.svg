@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Вариант 5: буквы CA (Change Analyzer) + метка задачи Jira -->
+  <rect x="8" y="8" width="112" height="112" rx="56" fill="#172B4D"/>
+  <text x="64" y="76" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="52" fill="#fff">CA</text>
+  <rect x="34" y="86" width="60" height="16" rx="8" fill="#FF5630"/>
+  <circle cx="44" cy="94" r="3.5" fill="#fff"/>
+  <rect x="52" y="91" width="34" height="6" rx="3" fill="#fff"/>
+</svg>
