@@ -6,6 +6,11 @@ let failed = 0;
 const check = (name, cond, got) => { console.log(`${cond ? 'OK  ' : 'FAIL'} ${name}${cond ? '' : ' → ' + JSON.stringify(got)}`); if (!cond) failed++; };
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
+  if (u.pathname === '/rest/experimental/content/483506343/version') {
+    const V = (number, when, name) => ({ number, when, message: '', by: { displayName: name } });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ results: [V(3, '2026-09-30T11:00:00Z', 'Кусков Евгений'), V(2, '2026-09-17T10:00:00Z', 'Кедрова Татьяна'), V(1, '2026-07-14T09:00:00Z', 'Изюмский Иван')] }));
+  }
   if (u.pathname.includes('/version')) { res.writeHead(404); return res.end(); }
   const m = u.pathname.match(/^\/pages\/(.+)$/);
   if (!m) { res.writeHead(404); return res.end(); }
