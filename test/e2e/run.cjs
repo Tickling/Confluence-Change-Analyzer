@@ -18,7 +18,7 @@ const webpack = require('webpack');
 const ROOT = path.resolve(__dirname, '../..');
 const DIST = path.join(ROOT, 'dist');
 const FIXTURES = path.join(ROOT, 'test/fixtures');
-const TESTS = ['highlight', 'parser', 'analyze', 'filters', 'export', 'doc2'];
+const TESTS = ['highlight', 'parser', 'analyze', 'filters', 'export', 'doc2', 'task'];
 
 /**
  * Собирает модуль парсера для модульных проверок в браузере.

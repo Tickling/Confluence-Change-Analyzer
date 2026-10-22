@@ -71,3 +71,10 @@ li.cfa-highlight { padding: 2px 4px; }
 }
 .cfa-counter__btn:hover { background: rgba(255, 255, 255, .3); }
 .cfa-counter__btn:disabled { opacity: .4; cursor: default; }
+
+/* «Показать на странице» во вкладке «Статус задачи» — временная рамка */
+.cfa-flash {
+  outline: 3px solid red !important;
+  outline-offset: 2px;
+  transition: outline-color .3s;
+}

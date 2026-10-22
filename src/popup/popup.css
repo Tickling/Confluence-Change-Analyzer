@@ -248,3 +248,43 @@ body.is-settings .tabs { display: none; }
 /* --- Результат подсветки --- */
 .status--compact { margin: 8px 0 0; }
 .status.is-warning { background: #fffae6; color: #974f0c; }
+
+/* --- Вкладка «Статус задачи» --- */
+.entries--tall { max-height: 340px; }
+.entries .group-title {
+  padding: 5px 8px;
+  background: var(--c-bg-soft);
+  color: var(--c-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.entry.is-clickable { cursor: pointer; }
+.entry.is-clickable:hover { background: #f4f8ff; }
+.entry__action { color: var(--c-primary); font-size: 11px; white-space: nowrap; }
+.entry__role { font-size: 11px; font-weight: 600; }
+.entry__first { margin-left: 4px; padding: 0 5px; border-radius: 8px; background: #e3fcef; color: #006644; font-size: 10px; font-weight: 700; }
+
+.task-card {
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+.task-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.task-card__key { color: var(--c-primary); font-size: 15px; font-weight: 700; text-decoration: none; }
+.task-card__key[href]:hover { text-decoration: underline; }
+.task-card__meta { margin-bottom: 8px; color: var(--c-muted); font-size: 12px; }
+.lozenge {
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #dfe1e6;
+  color: #42526e;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.lozenge.is-unknown { background: none; color: var(--c-muted); font-weight: 400; text-transform: none; }

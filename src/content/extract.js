@@ -29,7 +29,7 @@ const BEFORE_MAX = 160;
  * @param {Element} el - элемент
  * @returns {string} текст
  */
-function cleanText(el) {
+export function cleanText(el) {
   if (!el) return '';
   const doc = el.ownerDocument;
   const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
@@ -60,7 +60,7 @@ function tail(text, maxLen) {
  * @param {Element} root - корень документа
  * @returns {string[]} заголовки от старшего к младшему
  */
-function headingChain(el, root) {
+export function headingChain(el, root) {
   const stack = [];
   root.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
     if (!(h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) || h.contains(el)) return;
@@ -78,7 +78,7 @@ function headingChain(el, root) {
  * @param {Element} root - корень документа
  * @returns {string[]} заголовки блоков (внешний → внутренний)
  */
-function expandTitles(el, root) {
+export function expandTitles(el, root) {
   const titles = [];
   for (let cur = el.parentElement; cur && cur !== root; cur = cur.parentElement) {
     let title = null;
@@ -97,7 +97,7 @@ function expandTitles(el, root) {
  * @param {Element} root - корень документа
  * @returns {string|null} описание или null
  */
-function rowLabel(el, root) {
+export function rowLabel(el, root) {
   const tr = el.tagName === 'TR' ? el : el.closest('tr');
   if (!tr || !root.contains(tr)) return null;
   // Макросы редактора Server (Expand, панели) свёрстаны таблицей — это не строки таблицы документа

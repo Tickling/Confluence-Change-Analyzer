@@ -4,7 +4,7 @@
  * ШАГ 5: кнопка «Анализ» → background → content script, вывод и сохранение результата.
  * ШАГ 6: фильтры (AND, debounce) → подсветка на странице.
  * ШАГ 8: экспорт в Word (найденные правки по пунктам / таблица истории).
- * «Статус задачи» — ШАГ 9.
+ * ШАГ 9: вкладка «Статус задачи» — упоминания задачи в истории, версиях и документе.
  */
 import './popup.css';
 import { MESSAGE_TYPES, PAGE_MODES, STORAGE_KEYS } from '../lib/constants';
@@ -307,6 +307,10 @@ function renderAnalysis(data) {
   $('filters').disabled = false;
   $('btn-export').disabled = false;
   renderEntries();
+
+  // Подсказки для вкладки «Статус задачи»: все задачи из истории
+  const keys = [...new Set(data.entries.flatMap((e) => [...(e.jiraKeys || []), ...(e.reasonKeys || [])]))];
+  $('task-options')?.replaceChildren(...keys.map((k) => new Option(k)));
 }
 
 /* ======================== Фильтры и подсветка ======================== */
@@ -559,6 +563,277 @@ async function exportWord() {
   }
 }
 
+/* ======================== Статус задачи ======================== */
+
+/** Ключ задачи, найденной последней */
+let lastTaskKey = null;
+
+/**
+ * Приводит введённый ID задачи к виду PROJ-123.
+ * @param {string} value - ввод пользователя (может быть ссылкой на задачу)
+ * @returns {string|null} ключ задачи или null
+ */
+export function normalizeTaskKey(value) {
+  const v = String(value || '').trim().toUpperCase();
+  const m = v.match(/(?:^|\/BROWSE\/|\/ISSUE\/)([A-Z][A-Z0-9_]+-\d+)\b/) || v.match(/^([A-Z][A-Z0-9_]+-\d+)$/);
+  return m ? m[1] : null;
+}
+
+/**
+ * Показывает сообщение на вкладке «Статус задачи».
+ * @param {string} text - текст (пустой — скрыть)
+ * @param {'info'|'warning'|'error'} [kind='info'] - тип
+ * @returns {void}
+ */
+function setTaskStatus(text, kind = 'info') {
+  const el = $('task-status');
+  el.hidden = !text;
+  el.textContent = text || '';
+  el.classList.toggle('is-error', kind === 'error');
+  el.classList.toggle('is-warning', kind === 'warning');
+}
+
+/**
+ * Упоминания задачи в «Истории изменений»: в какой колонке и в какой версии.
+ * @param {import('../lib/parser').HistoryEntry[]} entries - записи истории
+ * @param {string} key - ключ задачи
+ * @returns {Array<{entry: Object, roles: string[]}>} записи с ролями упоминания
+ */
+function historyMentions(entries, key) {
+  const re = new RegExp(`(^|[^A-Z0-9_-])${key}(?![0-9])`);
+  return entries.map((entry) => {
+    const roles = [];
+    if ((entry.jiraKeys || []).includes(key)) roles.push('Артефакт Jira');
+    if ((entry.reasonKeys || []).includes(key)) roles.push('Причина изменения');
+    if (re.test(entry.description || '')) roles.push('Описание');
+    return { entry, roles };
+  }).filter((m) => m.roles.length)
+    // От ранних к поздним — первая запись = «впервые упомянута»
+    .sort((a, b) => String(a.entry.dateISO || '').localeCompare(String(b.entry.dateISO || '')));
+}
+
+/**
+ * Элемент-заголовок группы в списке упоминаний.
+ * @param {string} text - заголовок
+ * @returns {HTMLLIElement} элемент списка
+ */
+function groupTitle(text) {
+  const li = document.createElement('li');
+  li.className = 'group-title';
+  li.textContent = text;
+  return li;
+}
+
+/**
+ * Элемент упоминания в списке.
+ * @param {Object} p
+ * @param {string|null|undefined} p.color - цвет квадратика (HEX без #); undefined — без квадратика
+ * @param {string} p.meta - строка сведений
+ * @param {string} p.text - основной текст
+ * @param {string} [p.role] - роль (колонка истории / вид упоминания)
+ * @param {boolean} [p.first] - пометка «впервые»
+ * @param {string|null} [p.status] - статус задачи
+ * @param {Function} [p.onClick] - действие по клику
+ * @param {string|null} [p.href] - ссылка
+ * @returns {HTMLLIElement} элемент списка
+ */
+function mentionItem({ color, meta, text, role, first, status, onClick, href }) {
+  const li = document.createElement('li');
+  li.className = 'entry';
+  const m = document.createElement('div');
+  m.className = 'entry__meta';
+  // Квадратик цвета — только у записей истории (color === undefined — без квадратика)
+  if (color !== undefined) {
+    const sw = document.createElement('span');
+    sw.className = 'entry__color';
+    sw.style.background = color ? `#${color}` : 'transparent';
+    if (!color) sw.classList.add('is-empty');
+    m.appendChild(sw);
+  }
+  m.appendChild(document.createTextNode(meta));
+  if (first) {
+    const f = document.createElement('span');
+    f.className = 'entry__first';
+    f.textContent = 'впервые';
+    m.appendChild(f);
+  }
+  const d = document.createElement('div');
+  d.className = 'entry__desc';
+  d.textContent = text || '—';
+  if (color) d.style.color = `#${color}`;
+  const foot = document.createElement('div');
+  foot.className = 'entry__foot';
+  if (role) {
+    const r = document.createElement('span');
+    r.className = 'entry__role';
+    r.textContent = role;
+    foot.appendChild(r);
+  }
+  if (status) {
+    const st = document.createElement('span');
+    st.className = 'lozenge';
+    st.textContent = status;
+    foot.appendChild(st);
+  }
+  if (onClick) {
+    li.classList.add('is-clickable');
+    li.title = 'Показать на странице';
+    li.addEventListener('click', onClick);
+    const a = document.createElement('span');
+    a.className = 'entry__action';
+    a.textContent = 'показать на странице →';
+    foot.appendChild(a);
+  } else if (href) {
+    const a = document.createElement('a');
+    a.className = 'entry__link';
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = 'открыть ↗';
+    foot.appendChild(a);
+  }
+  li.append(m, d);
+  if (foot.childNodes.length) li.appendChild(foot);
+  return li;
+}
+
+/**
+ * Кнопка «Найти»: ищет упоминания задачи в истории, версиях страницы и документе.
+ * @returns {Promise<void>}
+ */
+async function findTask() {
+  const key = normalizeTaskKey($('task-id').value);
+  if (!key) {
+    setTaskStatus('Введите ID задачи в формате PROJ-123 (или вставьте ссылку на задачу)', 'error');
+    return;
+  }
+  $('task-id').value = key;
+  const btn = $('btn-find-task');
+  setLoading(btn, true);
+  setTaskStatus('Поиск упоминаний…');
+  try {
+    // Без анализа истории нет — запускаем его автоматически
+    if (!analysis) {
+      await runAnalysis();
+      if (!analysis) {
+        setTaskStatus($('analysis-status').textContent || 'Не удалось проанализировать страницу', 'error');
+        return;
+      }
+    }
+    const history = historyMentions(analysis.entries, key);
+    const versions = (analysis.versions || []).filter((v) => (v.message || '').toUpperCase().includes(key));
+    const doc = await sendHighlight(MESSAGE_TYPES.FIND_TASK, { key, autoExpand: settings.autoExpand !== false });
+    if (!doc?.ok) throw new Error(doc?.error || 'Не удалось выполнить поиск в документе');
+    lastTaskKey = key;
+    renderTaskResults(key, history, versions, doc);
+  } catch (err) {
+    log.error('Ошибка поиска задачи:', err);
+    setTaskStatus(`Ошибка: ${err?.message || err}`, 'error');
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/**
+ * Показывает результат поиска задачи.
+ * @param {string} key - ключ задачи
+ * @param {Array<{entry: Object, roles: string[]}>} history - упоминания в истории
+ * @param {import('../lib/parser').PageVersion[]} versions - версии страницы с упоминанием
+ * @param {{mentions: Object[], status: string|null, href: string|null}} doc - упоминания в документе
+ * @returns {void}
+ */
+function renderTaskResults(key, history, versions, doc) {
+  const total = history.length + versions.length + doc.mentions.length;
+  setTaskStatus(total ? '' : `Задача ${key} на странице не упоминается`, total ? 'info' : 'warning');
+
+  // Карточка задачи
+  $('task-card').hidden = !total;
+  const keyEl = $('task-card-key');
+  keyEl.textContent = key;
+  if (doc.href) keyEl.href = doc.href; else keyEl.removeAttribute('href');
+  const st = $('task-card-status');
+  st.textContent = doc.status || 'статус не загружен';
+  st.classList.toggle('is-unknown', !doc.status);
+  st.title = doc.status ? 'Текущий статус из макроса Jira на странице'
+    : 'Статус берётся из макроса Jira на странице. Дождитесь его загрузки в режиме просмотра.';
+  const first = history.length ? history[0].entry : null;
+  $('task-card-meta').textContent = [
+    `История: ${history.length}`, `Версии страницы: ${versions.length}`, `Документ: ${doc.mentions.length}`,
+    first ? `впервые — версия ${first.version}, ${first.date}` : null,
+  ].filter(Boolean).join(' · ');
+
+  const items = [];
+  if (history.length) {
+    items.push(groupTitle(`История изменений (${history.length})`));
+    history.forEach(({ entry, roles }, i) => items.push(mentionItem({
+      color: entry.color,
+      meta: `Версия ${entry.version} · ${entry.date || '—'} · ${entry.author || '—'}`,
+      text: entry.description,
+      role: roles.join(', '),
+      first: i === 0,
+      href: entry.versionUrl,
+    })));
+  }
+  if (versions.length) {
+    items.push(groupTitle(`Версии страницы (${versions.length})`));
+    versions.forEach((v) => items.push(mentionItem({
+      color: undefined,
+      meta: `Версия страницы ${v.number} · ${v.dateISO || '—'} · ${v.author || '—'}`,
+      text: v.message,
+      role: 'Комментарий к версии',
+      href: v.url,
+    })));
+  }
+  if (doc.mentions.length) {
+    items.push(groupTitle(`Документ (${doc.mentions.length})`));
+    const kinds = { macro: 'Макрос Jira', link: 'Ссылка', heading: 'Заголовок раздела', text: 'Текст' };
+    doc.mentions.forEach((m) => items.push(mentionItem({
+      color: undefined,
+      meta: [...m.location.headings, m.location.container].filter(Boolean).join(' › ') || 'Документ',
+      text: m.context,
+      role: kinds[m.kind] || m.kind,
+      status: m.status,
+      onClick: () => sendHighlight(MESSAGE_TYPES.REVEAL_MENTION, { index: m.index }).catch((err) => log.warn(err)),
+    })));
+  }
+  if (!items.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty';
+    empty.textContent = 'Упоминаний не найдено';
+    items.push(empty);
+  }
+  $('task-results').replaceChildren(...items);
+  $('task-count').textContent = String(total);
+}
+
+/**
+ * Кнопка «Подсветить правки по задаче»: переходит на вкладку «Анализ» и подсвечивает
+ * правки, связанные с задачей (через фильтр «Артефакт Jira», если задача есть в истории).
+ * @returns {Promise<void>}
+ */
+async function highlightTask() {
+  const key = lastTaskKey;
+  if (!key || !analysis) return;
+  switchTab('analysis');
+  const select = $('filter-jira');
+  if ([...select.options].some((o) => o.value === key)) {
+    $('filter-date').value = '';
+    $('filter-author').value = '';
+    select.value = key;
+    renderEntries();
+    await saveFilters().catch(() => {});
+    await highlight();
+    return;
+  }
+  // Задачи нет в колонке «Артефакт Jira» — подсвечиваем любые цветные правки рядом с ней
+  const knownKeys = [...new Set([key, ...analysis.entries.flatMap((e) => [...(e.jiraKeys || []), ...(e.reasonKeys || [])])])];
+  setHighlightStatus('Поиск правок на странице…');
+  const res = await sendHighlight(MESSAGE_TYPES.APPLY_HIGHLIGHT, {
+    colors: null, issueKey: key, knownKeys, autoExpand: settings.autoExpand !== false, showCounter: settings.showCounter !== false,
+  });
+  setHighlightStatus(res?.ok && res.count ? `Правки рядом с ${key}: ${res.count}` : `Цветных правок рядом с ${key} не найдено`, res?.count ? 'success' : 'warning');
+}
+
 /**
  * Кнопка «Сбросить»: очищает фильтры и убирает подсветку со страницы.
  * @returns {Promise<void>}
@@ -655,7 +930,9 @@ function bindEvents() {
   ['filter-date', 'filter-author', 'filter-jira'].forEach((id) => $(id)?.addEventListener('change', onFiltersChanged));
   $('btn-export')?.addEventListener('click', exportWord);
 
-  $('btn-find-task')?.addEventListener('click', () => log.info('«Найти» — шаг 9'));
+  $('btn-find-task')?.addEventListener('click', findTask);
+  $('btn-task-highlight')?.addEventListener('click', highlightTask);
+  $('task-id')?.addEventListener('input', () => { $('task-status').hidden = true; });
   $('task-id')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') $('btn-find-task')?.click();
   });

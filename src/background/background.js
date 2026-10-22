@@ -103,6 +103,8 @@ function onMessage(message, sender, sendResponse) {
       case MESSAGE_TYPES.APPLY_HIGHLIGHT:
       case MESSAGE_TYPES.CLEAR_HIGHLIGHT:
       case MESSAGE_TYPES.GET_CHANGES:
+      case MESSAGE_TYPES.FIND_TASK:
+      case MESSAGE_TYPES.REVEAL_MENTION:
         // Пересылаем команду подсветки во вкладку (content script внедряется при необходимости)
         sendToTab(message.payload?.tabId, { type: message.type, payload: message.payload?.options })
           .then(sendResponse)

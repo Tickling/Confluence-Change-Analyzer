@@ -96,17 +96,33 @@
     <label class="field">
       <span class="field__label">ID задачи</span>
       <div class="inline">
-        <input class="field__control" id="task-id" type="text" placeholder="Например, PLATFORM-11717" autocomplete="off" />
+        <input class="field__control" id="task-id" type="text" placeholder="Например, PLATFORM-11717"
+               autocomplete="off" list="task-options" />
         <button class="btn btn--primary" id="btn-find-task">Найти</button>
       </div>
+      <datalist id="task-options"></datalist>
     </label>
+    <p class="hint">Ищет задачу в «Истории изменений», в комментариях к версиям страницы и в тексте документа
+      (включая свёрнутые блоки и заголовки разделов).</p>
+
+    <div class="status" id="task-status" hidden></div>
+
+    <!-- Сводка по задаче -->
+    <div class="task-card" id="task-card" hidden>
+      <div class="task-card__head">
+        <a class="task-card__key" id="task-card-key" target="_blank" rel="noopener"></a>
+        <span class="lozenge" id="task-card-status"></span>
+      </div>
+      <div class="task-card__meta" id="task-card-meta"></div>
+      <button class="btn btn--block" id="btn-task-highlight">Подсветить правки по задаче</button>
+    </div>
 
     <div class="results">
       <div class="results__head">
-        <span>Упоминания в истории</span>
+        <span>Упоминания</span>
         <span class="badge" id="task-count">0</span>
       </div>
-      <ul class="entries" id="task-results">
+      <ul class="entries entries--tall" id="task-results">
         <li class="empty">Введите ID задачи и нажмите «Найти»</li>
       </ul>
     </div>

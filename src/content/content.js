@@ -11,6 +11,7 @@ import { getContentContext, getPageInfo, isEditUrl, waitForContentContext } from
 import { collectFilterOptions, parseHistoryTable } from '../lib/parser';
 import { applyHighlight, clearHighlight, getCurrentHighlight, summarize } from './highlighter';
 import { describeChanges } from './extract';
+import { findTaskMentions, revealMention } from './task-search';
 import { fetchPageVersions, linkEntriesToVersions } from './versions';
 
 /** Текущий контекст страницы (режим + корень документа) */
@@ -117,6 +118,21 @@ function onMessage(message, sender, sendResponse) {
         sendResponse({ ok: true, page: getPageInfo(), changes: describeChanges(groups, ctx.root) });
         return false;
       }
+      case MESSAGE_TYPES.FIND_TASK: {
+        // Упоминания задачи в теле документа (вкладка «Статус задачи»)
+        const ctx = getContext();
+        if (!ctx.root) {
+          sendResponse({ ok: false, error: 'Не найдено содержимое страницы Confluence' });
+          return false;
+        }
+        findTaskMentions(ctx, message.payload?.key, message.payload || {})
+          .then((res) => sendResponse({ ok: true, ...res }))
+          .catch((err) => sendResponse({ ok: false, error: String(err?.message || err) }));
+        return true;
+      }
+      case MESSAGE_TYPES.REVEAL_MENTION:
+        sendResponse({ ok: revealMention(getContext(), message.payload?.index) });
+        return false;
       case MESSAGE_TYPES.CLEAR_HIGHLIGHT:
         clearHighlight();
         sendResponse({ ok: true });

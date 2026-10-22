@@ -213,3 +213,24 @@ export function splitByMatches(blocks, matchElements) {
   });
   return { keep, extra };
 }
+
+/**
+ * Раскрывает свёрнутые блоки, внутри которых находится элемент (чтобы его стало видно).
+ * @param {Element} el - элемент
+ * @param {Element} root - корень документа
+ * @returns {number} сколько блоков раскрыто
+ */
+export function expandAncestors(el, root) {
+  let opened = 0;
+  for (let cur = el.parentElement; cur && cur !== root; cur = cur.parentElement) {
+    let trigger = null;
+    if (cur.matches('.expand-container')) trigger = cur.querySelector(':scope > .expand-control');
+    else if (cur.matches('[data-node-type="expand"], [data-node-type="nestedExpand"]')) trigger = cur.querySelector('button[aria-expanded]');
+    else if (cur.tagName === 'DETAILS' && !cur.open) { cur.open = true; opened += 1; }
+    if (trigger && isCollapsed(trigger)) {
+      trigger.click();
+      opened += 1;
+    }
+  }
+  return opened;
+}
