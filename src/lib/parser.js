@@ -25,6 +25,7 @@ import { colorToHex, extractIssueKeys, getElementColor, log, normalizeText } fro
  * @property {string|null} color - цвет текста описания (HEX без #)
  * @property {string|null} backgroundColor - цвет фона описания (HEX без #)
  * @property {string|null} [versionUrl] - ссылка на версию страницы
+ * @property {boolean} cancelled - правка отменена (описание в истории зачёркнуто)
  */
 
 /**
@@ -241,6 +242,41 @@ function isNeutral(hex, kind) {
   return Math.max(r, g, b) - Math.min(r, g, b) < 30;
 }
 
+/** Доля зачёркнутого текста, начиная с которой запись считается отменённой */
+const CANCELLED_RATIO = 0.6;
+
+/**
+ * Зачёркнут ли текстовый узел (<s>, <del>, <strike>, text-decoration: line-through) в пределах ячейки.
+ * @param {Text} node - текстовый узел
+ * @param {Element} cell - ячейка (выше не поднимаемся)
+ * @returns {boolean} true, если текст зачёркнут
+ */
+function isStruck(node, cell) {
+  for (let el = node.parentElement; el; el = el.parentElement) {
+    if (/^(S|DEL|STRIKE)$/.test(el.tagName)) return true;
+    if (/line-through/.test(el.style?.textDecoration || el.style?.textDecorationLine || '')) return true;
+    if (el === cell) break;
+  }
+  return false;
+}
+
+/**
+ * Отменена ли правка: описание в «Истории изменений» зачёркнуто целиком (или почти целиком).
+ * @param {Element} cell - ячейка «Описание»
+ * @returns {boolean} true для отменённой правки
+ */
+export function isCancelledDescription(cell) {
+  let total = 0;
+  let struck = 0;
+  const walker = cell.ownerDocument.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const len = n.nodeValue.trim().length;
+    total += len;
+    if (len && isStruck(n, cell)) struck += len;
+  }
+  return total > 0 && struck / total >= CANCELLED_RATIO;
+}
+
 /**
  * Текст ячейки без лишних пробелов.
  * @param {Element|undefined} cell - ячейка
@@ -291,6 +327,7 @@ export function parseHistoryTableElement(table) {
       color: descCell ? dominantColor(descCell, 'color') : null,
       backgroundColor: descCell ? dominantColor(descCell, 'background') : null,
       versionUrl: null,
+      cancelled: descCell ? isCancelledDescription(descCell) : false,
     };
     // Пустые строки (шаблон таблицы без заполнения) не нужны
     if (!entry.description && !entry.date && !entry.author && !entry.jiraKeys.length) return;

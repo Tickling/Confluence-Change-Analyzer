@@ -288,3 +288,7 @@ body.is-settings .tabs { display: none; }
   white-space: nowrap;
 }
 .lozenge.is-unknown { background: none; color: var(--c-muted); font-weight: 400; text-transform: none; }
+
+/* --- Отменённая правка (описание в истории зачёркнуто) --- */
+.entry__cancelled { margin-left: 4px; padding: 0 5px; border-radius: 8px; background: #ffebe6; color: #de350b; font-size: 10px; font-weight: 700; }
+.entry__desc.is-cancelled { text-decoration: line-through; opacity: .8; }

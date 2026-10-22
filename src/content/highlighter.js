@@ -50,6 +50,7 @@ const COLOR_TOLERANCE = 10;
  * @property {boolean} [includeHistory=false] - искать и в самой таблице «История изменений»
  * @property {boolean} [showCounter=true] - показывать панель «Найдено N совпадений»
  * @property {boolean} [autoExpand=true] - раскрывать свёрнутые блоки перед поиском
+ * @property {Array<{color: string, label: string}>} [cancelled] - цвета отменённых правок и подпись для рамки
  */
 
 /**
@@ -59,6 +60,7 @@ const COLOR_TOLERANCE = 10;
  * @property {string} color - цвет правки (HEX)
  * @property {string[]} issueKeys - задачи рядом с правкой
  * @property {string} text - текст правки
+ * @property {string|null} [cancelledLabel] - подпись, если правка отменена («Отменено · версия 10»)
  */
 
 /* ======================== Цвета ======================== */
@@ -331,6 +333,7 @@ export async function findChanges(root, opts = {}) {
       color: g.color,
       issueKeys: [...keys],
       text: g.elements.map((e) => e.textContent.replace(/\s+/g, ' ').trim()).join(' '),
+      cancelledLabel: (opts.cancelled || []).find((c) => c.color.toUpperCase() === g.color)?.label || null,
     };
   });
 
@@ -358,19 +361,41 @@ function isInline(el) {
 function wrapGroup(group) {
   const first = group.elements[0];
   const doc = first.ownerDocument;
+  const cancelled = Boolean(group.cancelledLabel);
   if (NO_WRAP_PARENTS.has(first.parentElement?.tagName) || first.tagName === 'TR' || first.tagName === 'LI') {
-    group.elements.forEach((el) => el.classList.add(HIGHLIGHT_CLASS));
+    group.elements.forEach((el) => {
+      el.classList.add(HIGHLIGHT_CLASS);
+      if (cancelled) el.classList.add(`${HIGHLIGHT_CLASS}--cancelled`);
+    });
+    // Подпись «Отменено»: у строки таблицы — на её первой ячейке (у <tr> псевдоэлемент не отображается)
+    const labelHost = cancelled ? (first.tagName === 'TR' ? first.cells?.[0] : first) : null;
+    if (labelHost) {
+      labelHost.dataset.cfaLabel = group.cancelledLabel;
+      if (labelHost !== first) labelHost.classList.add('cfa-cancel-label');
+    }
     return {
       targets: group.elements,
-      undo: () => group.elements.forEach((el) => {
-        el.classList.remove(HIGHLIGHT_CLASS, `${HIGHLIGHT_CLASS}--active`);
-        if (!el.classList.length) el.removeAttribute('class');
-      }),
+      undo: () => {
+        group.elements.forEach((el) => {
+          el.classList.remove(HIGHLIGHT_CLASS, `${HIGHLIGHT_CLASS}--active`, `${HIGHLIGHT_CLASS}--cancelled`);
+          if (!el.classList.length) el.removeAttribute('class');
+        });
+        if (labelHost) {
+          delete labelHost.dataset.cfaLabel;
+          labelHost.classList.remove('cfa-cancel-label');
+          if (!labelHost.classList.length) labelHost.removeAttribute('class');
+        }
+      },
     };
   }
   const inline = group.elements.length === 1 && isInline(first);
   const wrapper = doc.createElement(inline ? 'span' : 'div');
   wrapper.className = inline ? `${HIGHLIGHT_CLASS} ${HIGHLIGHT_CLASS}--inline` : HIGHLIGHT_CLASS;
+  if (cancelled) {
+    wrapper.classList.add(`${HIGHLIGHT_CLASS}--cancelled`);
+    wrapper.dataset.cfaLabel = group.cancelledLabel;
+    wrapper.title = `${group.cancelledLabel}: описание этой версии в «Истории изменений» зачёркнуто`;
+  }
   wrapper.dataset.cfaIndex = String(group.index);
   first.before(wrapper);
   group.elements.forEach((el) => wrapper.appendChild(el));
@@ -396,9 +421,13 @@ class OverlayLayer {
     this.groups = groups;
     this.layer = document.createElement('div');
     this.layer.className = 'cfa-overlay-layer';
-    this.boxes = groups.map(() => {
+    this.boxes = groups.map((g) => {
       const box = document.createElement('div');
       box.className = 'cfa-overlay-box';
+      if (g.cancelledLabel) {
+        box.classList.add('cfa-overlay-box--cancelled');
+        box.dataset.cfaLabel = g.cancelledLabel;
+      }
       this.layer.appendChild(box);
       return box;
     });
@@ -522,7 +551,7 @@ const state = {
  * @param {number} count - число найденных правок
  * @returns {void}
  */
-function renderCounter(count, expandedCount = 0) {
+function renderCounter(count, expandedCount = 0, cancelledCount = 0) {
   state.counter?.remove();
   const panel = document.createElement('div');
   panel.className = 'cfa-counter';
@@ -533,6 +562,12 @@ function renderCounter(count, expandedCount = 0) {
     <button class="cfa-counter__btn" data-act="next" title="Следующее">↓</button>
     <button class="cfa-counter__btn" data-act="close" title="Убрать подсветку">✕</button>`;
   panel.querySelector('.cfa-counter__text').textContent = `Найдено ${count} ${pluralMatches(count)}`;
+  if (cancelledCount) {
+    const c = document.createElement('span');
+    c.className = 'cfa-counter__hint cfa-counter__hint--cancelled';
+    c.textContent = `отменено: ${cancelledCount}`;
+    panel.querySelector('.cfa-counter__text').after(c);
+  }
   if (expandedCount) {
     const hint = document.createElement('span');
     hint.className = 'cfa-counter__hint';
@@ -652,7 +687,7 @@ export async function applyHighlight(ctx, opts = {}, silent = false) {
   } else {
     state.overlay = new OverlayLayer(ctx, groups);
   }
-  if (opts.showCounter !== false) renderCounter(groups.length, state.expanded.length);
+  if (opts.showCounter !== false) renderCounter(groups.length, state.expanded.length, groups.filter((g) => g.cancelledLabel).length);
   watchEditor();
   if (groups.length && !silent) goTo(0);
   log.info(`Подсвечено правок: ${groups.length} (режим: ${ctx.mode}, способ: ${ctx.strategy})`);
@@ -673,5 +708,7 @@ export function getCurrentHighlight() {
  * @returns {Array<{index: number, color: string, issueKeys: string[], text: string}>} сериализуемый список
  */
 export function summarize(groups) {
-  return groups.map(({ index, color, issueKeys, text }) => ({ index, color, issueKeys, text: text.slice(0, 300) }));
+  return groups.map(({ index, color, issueKeys, text, cancelledLabel }) => ({
+    index, color, issueKeys, text: text.slice(0, 300), cancelled: Boolean(cancelledLabel),
+  }));
 }

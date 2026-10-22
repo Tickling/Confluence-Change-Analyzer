@@ -78,3 +78,31 @@ li.cfa-highlight { padding: 2px 4px; }
   outline-offset: 2px;
   transition: outline-color .3s;
 }
+
+/* Отменённая правка (описание версии в «Истории изменений» зачёркнуто) */
+.cfa-highlight--cancelled { position: relative; }
+td.cfa-cancel-label, th.cfa-cancel-label { position: relative; }
+.cfa-highlight--cancelled,
+.cfa-overlay-box--cancelled {
+  border-style: dashed !important;
+  background: repeating-linear-gradient(135deg, rgba(222, 53, 11, .10) 0 6px, rgba(222, 53, 11, .02) 6px 12px) !important;
+}
+tr.cfa-highlight--cancelled { outline-style: dashed; }
+.cfa-highlight--cancelled:not(tr)::before,
+.cfa-cancel-label::before,
+.cfa-overlay-box--cancelled::before {
+  content: "✕ " attr(data-cfa-label);
+  position: absolute;
+  top: -11px;
+  right: 6px;
+  z-index: 1;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #de350b;
+  color: #fff;
+  font: 600 11px/16px -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.cfa-highlight--cancelled.cfa-highlight--inline::before { top: -16px; right: auto; left: 0; }
+.cfa-counter__hint--cancelled { color: #ffbdad; opacity: 1; }

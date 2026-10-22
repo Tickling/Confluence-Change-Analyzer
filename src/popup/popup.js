@@ -238,6 +238,18 @@ function fillSelect(select, options) {
 }
 
 /**
+ * Пометка «отменена» для записи, описание которой в истории зачёркнуто.
+ * @returns {HTMLSpanElement} пометка
+ */
+function cancelledBadge() {
+  const b = document.createElement('span');
+  b.className = 'entry__cancelled';
+  b.textContent = 'отменена';
+  b.title = 'Описание этой версии в «Истории изменений» зачёркнуто — правка отменена';
+  return b;
+}
+
+/**
  * Создаёт элемент списка «Записи истории».
  * @param {import('../lib/parser').HistoryEntry} entry - запись
  * @returns {HTMLLIElement} элемент списка
@@ -255,11 +267,13 @@ function renderEntry(entry) {
   swatch.title = color ? `Цвет правок: ${color}` : 'Описание без цвета — правки в документе не выделены цветом';
   if (!color) swatch.classList.add('is-empty');
   meta.append(swatch, document.createTextNode(`Версия ${entry.version} · ${entry.date || '—'} · ${entry.author || '—'}`));
+  if (entry.cancelled) meta.appendChild(cancelledBadge());
 
   const desc = document.createElement('div');
   desc.className = 'entry__desc';
   desc.textContent = entry.description || '—';
   if (color) desc.style.color = color;
+  if (entry.cancelled) desc.classList.add('is-cancelled');
 
   const foot = document.createElement('div');
   foot.className = 'entry__foot';
@@ -448,7 +462,8 @@ async function highlight() {
     if (!res?.ok) throw new Error(res?.error || 'Не удалось подсветить правки');
     lastHighlight = { ...res, entries: plan.entries, filters: readFilters() };
     if (res.count) {
-      setHighlightStatus(`На странице найдено: ${res.count} ${pluralChanges(res.count)}`, 'success');
+      const cancelled = (res.items || []).filter((i) => i.cancelled).length;
+      setHighlightStatus(`На странице найдено: ${res.count} ${pluralChanges(res.count)}${cancelled ? ` · из них отменено: ${cancelled}` : ''}`, 'success');
     } else {
       setHighlightStatus('Правок такого цвета на странице не найдено', 'warning');
     }
@@ -769,7 +784,7 @@ function renderTaskResults(key, history, versions, doc) {
       color: entry.color,
       meta: `Версия ${entry.version} · ${entry.date || '—'} · ${entry.author || '—'}`,
       text: entry.description,
-      role: roles.join(', '),
+      role: roles.join(', ') + (entry.cancelled ? ' · правка отменена' : ''),
       first: i === 0,
       href: entry.versionUrl,
     })));

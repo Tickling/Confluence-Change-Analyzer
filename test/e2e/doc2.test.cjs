@@ -35,6 +35,7 @@ const server = http.createServer((req, res) => {
   check('7 записей истории', E.length === 7, E.length);
   check('цвета: зачёркнутое описание версии 10 → оранжевый, список версии 12 → маджента, версия 17 → жёлтый',
     E.find((e) => e.version === '10').color === 'FF8B00' && E.find((e) => e.version === '12').color === 'E774BB' && E.find((e) => e.version === '17').color === 'FFC400', E.map((e) => [e.version, e.color]));
+  check('версия 10 (описание зачёркнуто) — отменена, остальные — нет', E.filter((e) => e.cancelled).map((e) => e.version).join() === '10', E.map((e) => [e.version, e.cancelled]));
   check('причина изменения версии 10 → PLATFORM-10119', JSON.stringify(E.find((e) => e.version === '10').reasonKeys) === '["PLATFORM-10119"]', null);
 
   const hl = async (filters) => {
@@ -61,6 +62,30 @@ const server = http.createServer((req, res) => {
     const found = await hl(f);
     check(`${label}: ${n}`, found.length === n && found.some((t) => re.test(t)), found);
   }
+  // ---------- Отменённая правка (версия 10) ----------
+  await hl({ jira: 'PLATFORM-10491' });
+  const canc = await page.evaluate(() => {
+    const w = document.querySelector('#main-content .cfa-highlight');
+    return {
+      cls: w.className, label: w.dataset.cfaLabel,
+      badge: getComputedStyle(w, '::before').content,
+      counter: document.querySelector('.cfa-counter__hint--cancelled')?.textContent,
+    };
+  });
+  check('отменённая правка: пунктирная рамка с подписью «✕ Отменено · версия 10»', /cfa-highlight--cancelled/.test(canc.cls) && canc.label === 'Отменено · версия 10' && /Отменено · версия 10/.test(canc.badge), canc);
+  check('счётчик на странице: «отменено: 1»', canc.counter === 'отменено: 1', canc.counter);
+  const pop = await popup.evaluate(() => ({
+    status: document.getElementById('highlight-status').textContent,
+    badge: document.querySelector('#entries-list .entry__cancelled')?.textContent,
+    struck: document.querySelector('#entries-list .entry__desc.is-cancelled') !== null,
+  }));
+  check('popup: «из них отменено: 1», у записи пометка «отменена»', /из них отменено: 1/.test(pop.status) && pop.badge === 'отменена' && pop.struck, pop);
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `${OUT}/doc2-cancelled.png` });
+  const ryab = await hl({ author: 'Рябец Антон Викторович (Anton Ryabets)' });
+  const ryabCancelled = await page.evaluate(() => document.querySelectorAll('#main-content .cfa-highlight--cancelled').length);
+  check('автор Рябец (версии 10 и 12): 2 правки, отменена только одна', ryab.length === 2 && ryabCancelled === 1, { ryab, ryabCancelled });
+
   // Шаг 4: в одной ячейке маджента (10661) и бирюзовый (5754) — бирюзовый абзац не относится к 10661
   const t5754 = await hl({ jira: 'PLATFORM-5754' });
   check('бирюзовый абзац шага 4 рядом с задачей 10661 не попадает в 5754', !t5754.some((t) => /damagedObjects/.test(t)), t5754);
@@ -91,6 +116,8 @@ const server = http.createServer((req, res) => {
   check('Word: расположение «Варианты использования › Основной сценарий › Шаг 7»', d.paras.includes('Расположение: Варианты использования › Основной сценарий › Шаг 7'), d.paras.filter((p) => /Располож/.test(p)));
   check('Word: после текста «Сохранить изменения, вызвав…»', d.paras.some((p) => /^После текста: «Сохранить изменения, вызвав Сценарий CLTO-11\.03\.»$/.test(p)), null);
   check('Word: автор Рябец в шапке', d.paras.some((p) => /^Автор: Рябец/.test(p)), null);
+  check('Word: в шапке «Статус: правка отменена»', d.paras.includes('Статус: правка отменена'), d.paras.slice(0, 12));
+  check('Word: у пункта «Статус: правка отменена (версия 10)…»', d.paras.some((p) => /^Статус: правка отменена \(версия 10\) — описание в «Истории изменений» зачёркнуто$/.test(p)), d.paras.filter((p) => /Статус/.test(p)));
   d = await exportDocx('PLATFORM-12096', 'doc2-12096.docx');
   console.log(d.paras.filter((p) => /^(Расположение|После текста)/.test(p)).map((p) => '  | ' + p).join('\n'));
   check('Word: заголовок с задачей очищен от плашки Jira', d.paras.includes('Расположение: Варианты использования › Блок «Решение по выплате» › Переход в состояние "Частичная выплата"'), d.paras.filter((p) => /Располож/.test(p)));
@@ -99,6 +126,18 @@ const server = http.createServer((req, res) => {
     execSync(`soffice --headless --convert-to pdf "${path.join(OUT, f)}" --outdir "${OUT}"`, { stdio: 'ignore', timeout: 120000 });
     check(`${f} открывается в LibreOffice`, fs.existsSync(path.join(OUT, f.replace('.docx', '.pdf'))), null);
   }
+  // Редактор Server: отменённая правка рисуется слоем поверх с подписью, слой остаётся position: fixed
+  const edUrl = url.replace('prinyat-reshenie.html', 'clto-15-edit-server.html');
+  const ed = await ctx.newPage(); await ed.goto(edUrl); await ed.waitForTimeout(700);
+  const edTab = await helper.evaluate(async (u) => (await chrome.tabs.query({})).find((t) => t.url === u).id, edUrl);
+  const edRes = await helper.evaluate(async (tabId) => chrome.runtime.sendMessage({ type: 'CFA_APPLY_HIGHLIGHT', payload: { tabId, options: { colors: ['36B37E'], cancelled: [{ color: '36B37E', label: 'Отменено · версия 3' }] } } }), edTab);
+  await ed.waitForTimeout(500);
+  const box = await ed.evaluate(() => {
+    const b = document.querySelector('.cfa-overlay-box--cancelled');
+    return b && { label: b.dataset.cfaLabel, pos: getComputedStyle(b).position, border: getComputedStyle(b).borderTopStyle, visible: b.style.display === 'block', inDoc: document.querySelector('#wysiwygTextarea_ifr').contentDocument.querySelectorAll('[data-cfa-label]').length };
+  });
+  check('редактор: отменённая правка — пунктирная рамка слоем поверх, position: fixed, документ не тронут', edRes.ok && box && box.label === 'Отменено · версия 3' && box.pos === 'fixed' && box.border === 'dashed' && box.visible && box.inDoc === 0, { edRes, box });
+
   await ctx.close(); server.close();
   console.log(failed ? `\nОшибок: ${failed}` : '\nВсе проверки пройдены');
   process.exit(failed ? 1 : 0);

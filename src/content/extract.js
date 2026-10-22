@@ -304,6 +304,7 @@ export function describeChanges(groups, root) {
         }),
         color: g.color ? `#${g.color}` : null,
         issueKeys: g.issueKeys,
+        cancelledLabel: g.cancelledLabel || null,
       };
     } catch (err) {
       log.error('Ошибка описания правки:', err);

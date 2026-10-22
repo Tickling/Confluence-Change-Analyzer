@@ -52,6 +52,7 @@ import { colorToHex, log, safeFileName } from './utils';
  * @property {ChangeRun[][]} paragraphs - фрагмент: абзацы, каждый — массив отрезков текста
  * @property {string|null} color - основной цвет фрагмента (по нему найден)
  * @property {string[]} issueKeys - задачи, упомянутые рядом
+ * @property {string|null} [cancelledLabel] - «Отменено · версия 10», если правка отменена
  */
 
 /**
@@ -138,6 +139,10 @@ function buildChangeBlock(change, n) {
   out.push(labeledParagraph('Расположение', path || 'не определено'));
   if (loc.before) out.push(labeledParagraph('После текста', `«${loc.before}»`, { italics: true }));
   if (change.issueKeys?.length) out.push(labeledParagraph('Задача', change.issueKeys.join(', ')));
+  if (change.cancelledLabel) {
+    const version = change.cancelledLabel.replace(/^Отменено\s*·\s*/, '');
+    out.push(labeledParagraph('Статус', `правка отменена (${version}) — описание в «Истории изменений» зачёркнуто`, { bold: true, color: 'DE350B' }));
+  }
 
   out.push(new Paragraph({
     spacing: { before: 80, after: 40 },
@@ -172,13 +177,14 @@ function buildEntryHeader(entry, numbered) {
     }));
   }
   out.push(labeledParagraph('Автор', entry.author || '—'));
+  if (entry.cancelled) out.push(labeledParagraph('Статус', 'правка отменена', { bold: true, color: 'DE350B' }));
   out.push(labeledParagraph('Дата изменения', entry.date || '—'));
   if (entry.jiraKeys?.length) out.push(labeledParagraph('Артефакт Jira', entry.jiraKeys.join(', ')));
   out.push(new Paragraph({
     spacing: { after: 60 },
     children: [
       new TextRun({ text: 'Описание: ', bold: true, color: MUTED, font: FONT }),
-      new TextRun({ text: entry.description || '—', font: FONT, color: colorToHex(entry.color) || undefined }),
+      new TextRun({ text: entry.description || '—', font: FONT, color: colorToHex(entry.color) || undefined, strike: Boolean(entry.cancelled) }),
     ],
   }));
   return out;
@@ -274,7 +280,10 @@ export function buildHistoryDocument({ pageTitle, entries, filters }) {
           cell(e.date),
           cell(e.author),
           cell(String(e.version ?? '')),
-          cell([new Paragraph({ children: [new TextRun({ text: e.description || '', color: color || undefined, font: FONT, size: 20 })] })]),
+          cell([new Paragraph({ children: [
+            new TextRun({ text: e.description || '', color: color || undefined, font: FONT, size: 20, strike: Boolean(e.cancelled) }),
+            ...(e.cancelled ? [new TextRun({ text: ' (отменена)', bold: true, color: 'DE350B', font: FONT, size: 20 })] : []),
+          ] })]),
           cell(color ? `#${color}` : '—', { fill: color || undefined }),
           cell((e.jiraKeys || []).join(', ')),
           cell(e.versionUrl

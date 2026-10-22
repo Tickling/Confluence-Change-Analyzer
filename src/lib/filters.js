@@ -73,12 +73,17 @@ export function buildHighlightPlan(allEntries, filters, settings = {}) {
   }
   // Известные ключи задач — чтобы находить их и в обычном тексте рядом с правкой
   const knownKeys = [...new Set(allEntries.flatMap((e) => [...(e.jiraKeys || []), ...(e.reasonKeys || [])]))];
+  // Цвета отменённых правок (описание в истории зачёркнуто) — подсвечиваются особо, с подписью
+  const cancelled = entries.filter((e) => e.cancelled && e.color)
+    .filter((e) => !entries.some((o) => !o.cancelled && o.color === e.color))
+    .map((e) => ({ color: e.color, label: `Отменено · версия ${e.version}` }));
   return {
     ok: true,
     reason: null,
     entries,
     payload: {
       colors,
+      cancelled,
       issueKey: filters.jira || null,
       knownKeys,
       autoExpand: settings.autoExpand !== false,
