@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Тестовая страница в разметке Confluence Server (упрощённо), по образцу документа CLTO-15 -->
+  <meta name="ajs-page-id" content="483506343" />
+  <meta name="ajs-page-title" content='Сценарий CLTO-15 Задача "Получить документы". Изменение данных задачи' />
+  <meta name="confluence-base-url" content="https://confluence.example" />
+  <title>Сценарий CLTO-15 Задача "Получить документы" - Confluence</title>
+  <style>
+    body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #172b4d; background: #fff; }
+    #header { height: 40px; background: #0747a6; color: #fff; display: flex; align-items: center; padding: 0 16px; font-weight: 600; }
+    #main { max-width: 980px; margin: 0 auto; padding: 16px 24px 60px; }
+    #title-text { font-size: 24px; margin: 8px 0 4px; }
+    .page-metadata { color: #6b778c; font-size: 12px; margin-bottom: 16px; }
+    h2 { font-size: 20px; margin: 28px 0 10px; }
+    h3 { font-size: 16px; margin: 20px 0 8px; }
+    table.confluenceTable { border-collapse: collapse; width: 100%; margin: 6px 0 12px; }
+    .confluenceTh, .confluenceTd { border: 1px solid #c1c7d0; padding: 6px 10px; vertical-align: top; text-align: left; }
+    .confluenceTh { background: #f4f5f7; font-weight: 600; }
+    a { color: #0052cc; text-decoration: none; }
+    .jira-issue { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border: 1px solid #dfe1e6; border-radius: 3px; background: #fafbfc; font-size: 12px; white-space: nowrap; }
+    .jira-issue a { font-weight: 600; }
+    .aui-lozenge { padding: 0 4px; border: 1px solid #c1c7d0; border-radius: 3px; font-size: 10px; font-weight: 700; color: #42526e; }
+    .expand-control { cursor: pointer; color: #0052cc; user-select: none; }
+    .expand-control-icon::before { content: "▶ "; font-size: 10px; }
+    .expand-container.expanded .expand-control-icon::before { content: "▼ "; }
+    .expand-hidden { display: none; }
+    .expand-content { padding: 6px 0 0 16px; }
+    ul { margin: 4px 0; padding-left: 20px; }
+  </style>
+</head>
+<body>
+  <div id="header">Confluence</div>
+  <div id="main">
+    <h1 id="title-text">Сценарий CLTO-15 Задача "Получить документы". Изменение данных задачи</h1>
+    <div class="page-metadata">Создал Изюмский Иван Игоревич · последнее изменение 30 сент. 2026 г.</div>
+
+    <div id="main-content" class="wiki-content">
+
+      <h2 id="osnovnye">Основные свойства UC</h2>
+      <table class="confluenceTable"><tbody>
+        <tr><th class="confluenceTh">Название UC</th><td class="confluenceTd">Изменение данных задачи "Получить документы" (сохранение изменений и выполнение задачи)</td></tr>
+        <tr><th class="confluenceTh">HTTP Method</th><td class="confluenceTd">POST</td></tr>
+        <tr><th class="confluenceTh">Endpoint</th><td class="confluenceTd">/api/external/claimsTask/v1/receiveDocuments/updateTask</td></tr>
+        <tr><th class="confluenceTh">Кого вызывает</th><td class="confluenceTd">
+          <p><a href="#">Сценарий CWC-03. Получение данных контекста работы пользователя POST</a></p>
+          <p><a href="#">Сценарий TM-03 Установка статуса задачи</a></p>
+          <p><a href="#">Сценарий CLTO-07. Получение списка задач</a></p>
+          <p><span style="color: rgb(208, 68, 152);"><a href="#" style="color: rgb(208, 68, 152);">Сценарий CLTO-20 Создание задачи "Принять решение" при выполнении условий</a></span></p>
+          <p><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-10842">PLATFORM-10842</a> - Получение подробных данных проблемы... <span class="aui-lozenge">СТАТУС</span></span></p>
+        </td></tr>
+      </tbody></table>
+
+      <h2 id="history">История изменений</h2>
+      <table class="confluenceTable">
+        <thead><tr>
+          <th class="confluenceTh">№</th><th class="confluenceTh">Дата изменения</th><th class="confluenceTh">Причина изменения</th>
+          <th class="confluenceTh">Описание</th><th class="confluenceTh">Автор</th><th class="confluenceTh">Ревью</th><th class="confluenceTh">Артефакт Jira</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="confluenceTd">1</td><td class="confluenceTd">14 июл. 2026 г.</td><td class="confluenceTd"></td>
+            <td class="confluenceTd">Создан новый документ</td>
+            <td class="confluenceTd"><a class="confluence-userlink" href="#">Изюмский Иван Игоревич (Ivan Izyumsky)</a></td><td class="confluenceTd"></td>
+            <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-9209">PLATFORM-9209</a> <span class="aui-lozenge">СТАТУС</span></span></td>
+          </tr>
+          <tr>
+            <td class="confluenceTd">2</td><td class="confluenceTd">17 сент. 2026 г.</td>
+            <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-9135">PLATFORM-9135</a> <span class="aui-lozenge">СТАТУС</span></span></td>
+            <td class="confluenceTd"><span style="color: rgb(208, 68, 152);">На шаге 8 реализовать вызов сценария создания задачи Принять решение</span></td>
+            <td class="confluenceTd"><a class="confluence-userlink" href="#">Кедрова Татьяна Сергеевна (Tatyana Kedrova)</a></td><td class="confluenceTd"></td>
+            <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-10842">PLATFORM-10842</a> <span class="aui-lozenge">СТАТУС</span></span></td>
+          </tr>
+          <tr>
+            <td class="confluenceTd">3</td><td class="confluenceTd">30 сент. 2026 г.</td><td class="confluenceTd"></td>
+            <td class="confluenceTd"><span style="color: rgb(54, 179, 126);">Реализовать развилку для создания задачи "Принять решение" или "Проверить неоплаченный СА"</span></td>
+            <td class="confluenceTd"><a class="confluence-userlink" href="#">Кусков Евгений Павлович (Evgeniy Kuskov)</a></td><td class="confluenceTd"></td>
+            <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-11717">PLATFORM-11717</a> <span class="aui-lozenge">СТАТУС</span></span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="vyhodnye">Выходные параметры</h2>
+      <h3>FilesData (Документы Заявления)</h3>
+      <table class="confluenceTable">
+        <thead><tr><th class="confluenceTh">Техническое название</th><th class="confluenceTh">Бизнес название</th><th class="confluenceTh">Тип</th><th class="confluenceTh">Правило формирования</th></tr></thead>
+        <tbody>
+          <tr><td class="confluenceTd">docType</td><td class="confluenceTd">Тип документа</td><td class="confluenceTd">int</td><td class="confluenceTd">Справочник ClaimDocumentType</td></tr>
+          <tr>
+            <td class="confluenceTd"><span style="color: rgb(208, 68, 152);">docStatus</span></td>
+            <td class="confluenceTd"><span style="color: rgb(208, 68, 152);">Статус документа</span></td>
+            <td class="confluenceTd"><span style="color: rgb(208, 68, 152);">string</span></td>
+            <td class="confluenceTd"><span style="color: rgb(208, 68, 152);">Значение claimDocumentStatusCode справочника ClaimDocumentStatus: REQUESTED (Запрошен) или RECEIVED (Получен)</span></td>
+          </tr>
+          <tr><td class="confluenceTd">fileName</td><td class="confluenceTd">Имя файла</td><td class="confluenceTd">string</td><td class="confluenceTd"></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="variant">Вариант использования</h2>
+      <h3 id="algoritm">Описание алгоритма</h3>
+      <table class="confluenceTable">
+        <thead><tr><th class="confluenceTh">№</th><th class="confluenceTh">Описание шага сценария</th><th class="confluenceTh">Комментарий</th></tr></thead>
+        <tbody>
+          <tr><td class="confluenceTd">1</td><td class="confluenceTd">Проверить наличие в запросе обязательных параметров. Если параметры присутствуют — переход к шагу 2.</td><td class="confluenceTd">Валидация обязательных параметров запроса</td></tr>
+          <tr><td class="confluenceTd">2</td><td class="confluenceTd">Авторизация сотрудника по accessToken. Получить логин пользователя из токена.</td><td class="confluenceTd">Извлечение данных пользователя из токена</td></tr>
+          <tr><td class="confluenceTd">7</td><td class="confluenceTd">
+            <p>Изменить статус задачи. Вызвать <a href="#">Сценарий TM-03 Установка статуса задачи</a> микросервиса ms-task-manager.</p>
+            <p>Если операция вернула ошибку, вернуть ошибку инициатору и завершить сценарий.</p>
+            <p><span style="color: rgb(208, 68, 152);">После успешной смены статуса вызвать Сценарий CLTO-20 Создание задачи "Принять решение" при выполнении условий.</span></p>
+            <p><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-10842">PLATFORM-10842</a> - Получение подробных данных проблемы... <span class="aui-lozenge">СТАТУС</span></span></p>
+          </td><td class="confluenceTd">Изменение статуса задачи</td></tr>
+          <tr><td class="confluenceTd">8</td><td class="confluenceTd">
+            <p><span style="color: rgb(54, 179, 126);">Проверить task.parentObjectId на принадлежность страховому акту, передав его значение в сценарий <a href="#" style="color: rgb(54, 179, 126);">Сценарий CIA-09. Получение данных из таблицы связи СА с содержимым POST</a></span></p>
+            <ul style="color: rgb(54, 179, 126);">
+              <li>При возврате ошибки 400 и 404 перейти на шаг 9</li>
+              <li>При возврате кода 200 перейти на шаг 10</li>
+              <li>При возврате ошибки 500 завершить сценарий</li>
+            </ul>
+          </td><td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-11717">PLATFORM-11717</a> - Получение подробных данных проблемы... <span class="aui-lozenge">СТАТУС</span></span></td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="primery">Примеры запросов</h2>
+      <!-- Свёрнутый блок (макрос Expand) — для проверки автораскрытия -->
+      <div class="expand-container">
+        <div class="expand-control"><span class="expand-control-icon"></span><span class="expand-control-text">Ответ при развилке "Проверить неоплаченный СА"</span></div>
+        <div class="expand-content expand-hidden">
+          <p><span style="color: rgb(54, 179, 126);">{ "taskType": "CHECK_UNPAID_INSURANCE_ACT", "parentObjectId": "6f1c…" }</span></p>
+          <p><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-11717">PLATFORM-11717</a> <span class="aui-lozenge">СТАТУС</span></span></p>
+        </div>
+      </div>
+
+      <!-- Блок без правок — после поиска должен свернуться обратно -->
+      <div class="expand-container" id="exp-plain">
+        <div class="expand-control"><span class="expand-control-icon"></span><span class="expand-control-text">Пример запроса (без изменений)</span></div>
+        <div class="expand-content expand-hidden"><p>{ "requestId": "uuid", "task": { … } }</p></div>
+      </div>
+
+      <!-- Вложенный блок: правка во внутреннем свёрнутом блоке -->
+      <div class="expand-container" id="exp-outer">
+        <div class="expand-control"><span class="expand-control-icon"></span><span class="expand-control-text">Ошибки сценария</span></div>
+        <div class="expand-content expand-hidden">
+          <p>Перечень кодов ошибок сценария.</p>
+          <div class="expand-container" id="exp-inner">
+            <div class="expand-control"><span class="expand-control-icon"></span><span class="expand-control-text">Ошибки шага 8</span></div>
+            <div class="expand-content expand-hidden">
+              <p><span style="color: rgb(54, 179, 126);">CIA-09 вернул 500 — завершить сценарий с кодом ERR_CIA_UNAVAILABLE</span></p>
+              <p><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-11717">PLATFORM-11717</a> <span class="aui-lozenge">СТАТУС</span></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- «Ленивый» блок: содержимое появляется только после раскрытия -->
+      <div class="expand-container" id="exp-lazy" data-lazy="true">
+        <div class="expand-control"><span class="expand-control-icon"></span><span class="expand-control-text">Журнал вызовов (загружается при раскрытии)</span></div>
+        <div class="expand-content expand-hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Имитация поведения макроса Expand в Confluence
+    document.querySelectorAll('.expand-control').forEach(function (ctrl) {
+      ctrl.addEventListener('click', function () {
+        var box = ctrl.parentElement;
+        box.classList.toggle('expanded');
+        var content = box.querySelector('.expand-content');
+        content.classList.toggle('expand-hidden');
+        // «Ленивый» блок: имитация подгрузки содержимого с сервера при первом раскрытии
+        if (box.dataset.lazy && !box.dataset.loaded) {
+          box.dataset.loaded = 'true';
+          setTimeout(function () {
+            content.innerHTML = '<p><span style="color: rgb(54, 179, 126);">Вызов CIA-09 логируется с параметром insActId</span></p>'
+              + '<p><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-11717">PLATFORM-11717</a> <span class="aui-lozenge">СТАТУС</span></span></p>';
+          }, 400);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

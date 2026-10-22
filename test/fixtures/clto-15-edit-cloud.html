@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8" />
+<!-- Тестовая страница: режим редактирования Confluence Cloud (ProseMirror) -->
+<meta name="ajs-base-url" content="https://example.atlassian.net/wiki" />
+<title>Редактирование - Сценарий CLTO-15 - Confluence</title>
+<style>body{margin:0;font:14px Arial,sans-serif;color:#172b4d} .ak-editor-content-area{max-width:900px;margin:0 auto;padding:16px}
+table{border-collapse:collapse;width:100%} td,th{border:1px solid #c1c7d0;padding:4px 8px;vertical-align:top;text-align:left} th{background:#f4f5f7}
+.fabric-text-color-mark{color:var(--custom-palette-color)} .inlineCardView-content-wrap a{border:1px solid #dfe1e6;padding:1px 4px;border-radius:3px}
+[data-node-type="expand"] .ak-editor-expand__content{display:none} [data-node-type="expand"].ak-editor-selected-node .ak-editor-expand__content,[data-node-type="expand"][data-expanded="true"] .ak-editor-expand__content{display:block}</style>
+</head><body>
+<div class="ak-editor-content-area">
+<div class="ProseMirror" contenteditable="true" translate="no">
+<h2>История изменений</h2>
+<div class="pm-table-container"><table data-number-column="false"><tbody>
+<tr><th><p>№</p></th><th><p>Дата изменения</p></th><th><p>Причина изменения</p></th><th><p>Описание</p></th><th><p>Автор</p></th><th><p>Ревью</p></th><th><p>Артефакт Jira</p></th></tr>
+<tr><td><p>1</p></td><td><p><span class="date-lozenger-container" data-node-type="date" timestamp="1783987200000">14 июл. 2026 г.</span></p></td><td><p></p></td><td><p>Создан новый документ</p></td><td><p><span class="mentionView-content-wrap" data-mention-id="1">@Изюмский Иван Игоревич (Ivan Izyumsky)</span></p></td><td><p></p></td><td><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-9209"><a href="https://example.atlassian.net/browse/PLATFORM-9209">PLATFORM-9209: Получение подробных данных проблемы</a></span></p></td></tr>
+<tr><td><p>2</p></td><td><p>17 сент. 2026 г.</p></td><td><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-9135"><a href="https://example.atlassian.net/browse/PLATFORM-9135">PLATFORM-9135: Получение подробных данных проблемы</a></span></p></td><td><p><span class="fabric-text-color-mark" style="--custom-palette-color: #D04498" data-text-custom-color="#d04498">На шаге 8 реализовать вызов сценария создания задачи Принять решение</span></p></td><td><p><span class="mentionView-content-wrap" data-mention-id="2">@Кедрова Татьяна Сергеевна (Tatyana Kedrova)</span></p></td><td><p></p></td><td><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-10842"><a href="https://example.atlassian.net/browse/PLATFORM-10842">PLATFORM-10842: Получение подробных данных проблемы</a></span></p></td></tr>
+<tr><td><p>3</p></td><td><p>30 сент. 2026 г.</p></td><td><p></p></td><td><p><span class="fabric-text-color-mark" style="--custom-palette-color: #36B37E" data-text-custom-color="#36b37e">Реализовать развилку для создания задачи "Принять решение" или "Проверить неоплаченный СА"</span></p></td><td><p><span class="mentionView-content-wrap" data-mention-id="3">@Кусков Евгений Павлович (Evgeniy Kuskov)</span></p></td><td><p></p></td><td><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-11717"><a href="https://example.atlassian.net/browse/PLATFORM-11717">PLATFORM-11717: Получение подробных данных проблемы</a></span></p></td></tr>
+</tbody></table></div>
+<h2>Вариант использования</h2>
+<h3>Описание алгоритма</h3>
+<div class="pm-table-container"><table><tbody>
+<tr><th><p>№</p></th><th><p>Описание шага сценария</p></th><th><p>Комментарий</p></th></tr>
+<tr><td><p>7</p></td><td><p>Если операция вернула ошибку, вернуть ошибку инициатору и завершить сценарий.</p><p><span class="fabric-text-color-mark" style="--custom-palette-color: #D04498" data-text-custom-color="#d04498">После успешной смены статуса вызвать Сценарий CLTO-20 Создание задачи "Принять решение" при выполнении условий.</span></p><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-10842"><a href="https://example.atlassian.net/browse/PLATFORM-10842">PLATFORM-10842: Получение подробных данных проблемы</a></span></p></td><td><p>Изменение статуса задачи</p></td></tr>
+<tr id="step8"><td><p>8</p></td><td><p><span class="fabric-text-color-mark" style="--custom-palette-color: #36B37E" data-text-custom-color="#36b37e">Проверить task.parentObjectId на принадлежность страховому акту, передав его значение в сценарий CIA-09.</span></p><ul><li><p><span class="fabric-text-color-mark" style="--custom-palette-color: #36B37E" data-text-custom-color="#36b37e">При возврате ошибки 400 и 404 перейти на шаг 9</span></p></li></ul></td><td><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-11717"><a href="https://example.atlassian.net/browse/PLATFORM-11717">PLATFORM-11717: Получение подробных данных проблемы</a></span></p></td></tr>
+</tbody></table></div>
+<h2>Примеры запросов</h2>
+<div class="ak-editor-expand" data-node-type="expand" data-title="Ответ при развилке">
+<div class="ak-editor-expand__title-container"><button aria-label="Развернуть" aria-expanded="false" onclick="var e=this.closest('[data-node-type=expand]');var o=this.getAttribute('aria-expanded')==='true';e.dataset.expanded=String(!o);this.setAttribute('aria-expanded',String(!o))">▶</button> Ответ при развилке</div>
+<div class="ak-editor-expand__content"><p><span class="fabric-text-color-mark" style="--custom-palette-color: #36B37E" data-text-custom-color="#36b37e">{ "taskType": "CHECK_UNPAID_INSURANCE_ACT" }</span></p><p><span class="inlineCardView-content-wrap" data-inline-card="true" data-card-url="https://example.atlassian.net/browse/PLATFORM-11717"><a href="https://example.atlassian.net/browse/PLATFORM-11717">PLATFORM-11717: Получение подробных данных проблемы</a></span></p></div>
+</div>
+<div class="ak-editor-expand" data-node-type="expand" data-title="Пример запроса (без изменений)" id="cloud-plain">
+<div class="ak-editor-expand__title-container"><button aria-label="Развернуть" aria-expanded="false" onclick="var e=this.closest('[data-node-type=expand]');var o=this.getAttribute('aria-expanded')==='true';e.dataset.expanded=String(!o);this.setAttribute('aria-expanded',String(!o))">▶</button> Пример запроса (без изменений)</div>
+<div class="ak-editor-expand__content"><p>{ "requestId": "uuid" }</p></div>
+</div>
+</div></div>
+</body></html>

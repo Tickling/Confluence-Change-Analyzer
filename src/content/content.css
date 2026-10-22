@@ -1,0 +1,73 @@
+/* Стили, внедряемые в страницу Confluence */
+
+/* Обёртка найденного блока */
+.cfa-highlight {
+  border: 2px solid red;
+  background: rgba(255, 0, 0, 0.06);
+  border-radius: 3px;
+  padding: 2px;
+  margin: 2px 0;
+}
+
+/* Правка внутри строки текста */
+.cfa-highlight--inline {
+  display: inline;
+  padding: 0 2px;
+  margin: 0;
+}
+
+/* Строки таблицы и элементы списка: рамка без обёртки */
+tr.cfa-highlight { outline: 2px solid red; outline-offset: -2px; border: 0; }
+li.cfa-highlight { padding: 2px 4px; }
+
+/* Текущая правка (переход ↑ ↓) */
+.cfa-highlight--active {
+  box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.25);
+}
+
+/* Режим редактирования: слой рамок поверх документа (сам документ не меняется) */
+.cfa-overlay-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  pointer-events: none;
+}
+.cfa-overlay-box {
+  position: fixed;
+  display: none;
+  border: 2px solid red;
+  border-radius: 3px;
+  background: rgba(255, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+.cfa-overlay-box--active { box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.25); }
+
+/* Плавающая панель-счётчик «Найдено N совпадений» */
+.cfa-counter {
+  position: fixed;
+  top: 56px;
+  right: 16px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #172b4d;
+  color: #fff;
+  font: 600 13px/1.3 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  box-shadow: 0 4px 12px rgba(9, 30, 66, .3);
+}
+.cfa-counter__dot { width: 10px; height: 10px; border-radius: 2px; border: 2px solid red; }
+.cfa-counter__hint { font-weight: 400; font-size: 12px; opacity: .75; }
+.cfa-counter__btn {
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .15);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.cfa-counter__btn:hover { background: rgba(255, 255, 255, .3); }
+.cfa-counter__btn:disabled { opacity: .4; cursor: default; }
