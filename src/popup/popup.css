@@ -1,0 +1,250 @@
+/* ===== Стили popup «Confluence Change Analyzer» ===== */
+:root {
+  --c-primary: #0052cc;
+  --c-primary-hover: #0747a6;
+  --c-text: #172b4d;
+  --c-muted: #6b778c;
+  --c-border: #dfe1e6;
+  --c-bg: #ffffff;
+  --c-bg-soft: #f4f5f7;
+  --c-danger: #de350b;
+  --radius: 4px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 380px;
+  margin: 0;
+  color: var(--c-text);
+  background: var(--c-bg);
+  font: 13px/1.4 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* --- Шапка --- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--c-border);
+}
+.header__title { font-weight: 600; font-size: 14px; }
+
+/* --- Вкладки --- */
+.tabs { display: flex; border-bottom: 1px solid var(--c-border); }
+.tabs__btn {
+  flex: 1;
+  padding: 9px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--c-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tabs__btn:hover { color: var(--c-text); }
+.tabs__btn.is-active { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+
+.panel { display: none; padding: 12px; }
+.panel.is-active { display: block; }
+
+/* --- Кнопки --- */
+.btn {
+  padding: 7px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-bg-soft);
+  color: var(--c-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: #ebecf0; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn--primary { background: var(--c-primary); border-color: var(--c-primary); color: #fff; }
+.btn--primary:hover:not(:disabled) { background: var(--c-primary-hover); }
+.btn--block { display: block; width: 100%; }
+.btn.is-loading { position: relative; color: transparent; }
+.btn.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cfa-spin .7s linear infinite;
+}
+@keyframes cfa-spin { to { transform: rotate(360deg); } }
+
+/* --- Статус --- */
+.status {
+  margin: 8px 0 12px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  background: var(--c-bg-soft);
+  color: var(--c-muted);
+  font-size: 12px;
+}
+.status.is-error { background: #ffebe6; color: var(--c-danger); }
+.status.is-success { background: #e3fcef; color: #006644; }
+
+/* --- Фильтры и поля --- */
+.filters { margin: 0 0 12px; padding: 0; border: 0; }
+.filters:disabled { opacity: .55; }
+.filters__legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
+.hint { color: var(--c-muted); font-weight: 400; font-size: 11px; }
+
+.field { display: block; margin-bottom: 8px; }
+.field__label { display: block; margin-bottom: 3px; color: var(--c-muted); font-size: 11px; font-weight: 600; }
+.field__control {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: #fafbfc;
+  color: var(--c-text);
+  font: inherit;
+}
+.field__control:focus { outline: none; border-color: #4c9aff; background: #fff; box-shadow: 0 0 0 1px #4c9aff; }
+
+.inline { display: flex; gap: 6px; }
+.actions { display: flex; gap: 6px; margin-top: 4px; }
+.actions .btn { flex: 1; }
+
+/* --- Список результатов --- */
+.results { margin-bottom: 12px; }
+.results__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #dfe1e6;
+  font-size: 11px;
+  text-align: center;
+}
+.entries {
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+.entries li { padding: 7px 8px; border-bottom: 1px solid var(--c-border); }
+.entries li:last-child { border-bottom: 0; }
+.entries .empty { color: var(--c-muted); text-align: center; font-size: 12px; }
+
+/* Элемент записи истории (наполняется на следующих шагах) */
+.entry__meta { display: flex; gap: 6px; color: var(--c-muted); font-size: 11px; }
+.entry__desc { margin-top: 2px; }
+.entry__color {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(0,0,0,.2);
+  vertical-align: middle;
+}
+.entry__issue { color: var(--c-primary); font-weight: 600; font-size: 11px; }
+
+.footer {
+  padding: 6px 12px;
+  border-top: 1px solid var(--c-border);
+  color: var(--c-muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* --- Блок экспорта --- */
+.export { padding: 8px; border: 1px solid var(--c-border); border-radius: var(--radius); background: #fafbfc; }
+.radio { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; font-size: 12px; cursor: pointer; }
+.radio input { margin: 2px 0 0; }
+.export .btn { margin-top: 4px; }
+
+/* --- Кнопки-иконки в шапке --- */
+.header__title { flex: 1; }
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--c-muted);
+  cursor: pointer;
+}
+.icon-btn:hover { background: var(--c-bg-soft); color: var(--c-text); }
+.icon-btn.is-active { background: #deebff; color: var(--c-primary); }
+
+/* Скрытый фильтр (выключен в настройках) */
+.field.is-off { display: none; }
+
+/* --- Режим настроек: прячем вкладки --- */
+body.is-settings .tabs { display: none; }
+
+.settings__head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.settings__title { font-weight: 600; font-size: 14px; }
+.btn--link { padding: 2px 4px; border: 0; background: none; color: var(--c-primary); }
+.btn--link:hover:not(:disabled) { background: none; text-decoration: underline; }
+
+.settings__group { margin-bottom: 14px; }
+.settings__group-title { margin-bottom: 4px; font-weight: 600; }
+.settings__group .hint { display: block; margin: 0 0 8px; }
+
+/* --- Переключатель (switch) --- */
+.switch { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch__slider {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: #c1c7d0;
+  transition: background .15s;
+}
+.switch__slider::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .15s;
+}
+.switch input:checked + .switch__slider { background: #36b37e; }
+.switch input:checked + .switch__slider::after { transform: translateX(14px); }
+.switch input:focus-visible + .switch__slider { box-shadow: 0 0 0 2px #4c9aff; }
+.switch.is-locked { cursor: not-allowed; }
+.switch.is-locked .switch__slider { opacity: .6; }
+
+/* --- Статус: вторая строка --- */
+.status__details { margin-top: 2px; font-size: 11px; opacity: .85; }
+
+/* --- Запись истории --- */
+.entry__color.is-empty { border-style: dashed; }
+.entry__foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.entry__link { color: var(--c-muted); font-size: 11px; text-decoration: none; }
+.entry__link:hover { color: var(--c-primary); text-decoration: underline; }
+
+/* --- Результат подсветки --- */
+.status--compact { margin: 8px 0 0; }
+.status.is-warning { background: #fffae6; color: #974f0c; }

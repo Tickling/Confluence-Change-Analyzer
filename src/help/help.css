@@ -1,0 +1,131 @@
+/* ===== Стили страницы инструкции ===== */
+:root {
+  --c-primary: #0052cc;
+  --c-text: #172b4d;
+  --c-muted: #5e6c84;
+  --c-border: #dfe1e6;
+  --c-bg: #f4f5f7;
+  --c-card: #ffffff;
+  --c-red: #de350b;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.top {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 28px max(16px, calc(50% - 480px)) 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--c-border);
+}
+.top h1 { margin: 0; font-size: 26px; }
+.lead { margin: 2px 0 0; color: var(--c-muted); }
+
+.toc {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px max(16px, calc(50% - 480px));
+  background: #fff;
+  border-bottom: 1px solid var(--c-border);
+}
+.toc a { padding: 4px 10px; border-radius: 14px; color: var(--c-primary); text-decoration: none; font-size: 13px; font-weight: 600; }
+.toc a:hover { background: #deebff; }
+
+main { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+.card {
+  margin-bottom: 20px;
+  padding: 22px 26px;
+  background: var(--c-card);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  scroll-margin-top: 56px;
+}
+.card h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 20px; }
+.card p { margin: 0 0 10px; }
+.card ul, .card ol { margin: 0 0 10px; padding-left: 22px; }
+.card li { margin-bottom: 4px; }
+
+.num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Шаг: текст слева, скриншот справа */
+.step { display: grid; grid-template-columns: 1fr 300px; gap: 8px 28px; align-items: start; }
+.step .wide { grid-column: 1 / -1; }
+figure { margin: 0; }
+figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(9, 30, 66, .12);
+}
+figcaption { margin-top: 6px; color: var(--c-muted); font-size: 13px; text-align: center; }
+
+.flow { display: flex; align-items: stretch; gap: 8px; margin: 14px 0; }
+.flow__item {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  background: #fafbfc;
+  font-size: 14px;
+}
+.flow__item .num { width: 22px; height: 22px; font-size: 12px; margin-right: 6px; }
+.flow__arrow { align-self: center; color: var(--c-muted); font-size: 20px; }
+
+.red { color: var(--c-red); font-weight: 600; border: 2px solid red; border-radius: 3px; padding: 0 4px; }
+.note { padding: 10px 14px; border-radius: 6px; background: #deebff; font-size: 14px; }
+code { padding: 1px 5px; border-radius: 3px; background: var(--c-bg); font: 13px/1.4 "SFMono-Regular", Consolas, monospace; }
+.inline-icon { width: 18px; height: 18px; vertical-align: -3px; }
+
+table.mini { width: 100%; margin: 0 0 10px; border-collapse: collapse; font-size: 14px; }
+table.mini th, table.mini td { padding: 6px 8px; border: 1px solid var(--c-border); text-align: left; vertical-align: top; }
+table.mini th { background: var(--c-bg); }
+
+details { margin-bottom: 8px; padding: 8px 12px; border: 1px solid var(--c-border); border-radius: 6px; }
+details summary { font-weight: 600; cursor: pointer; }
+details[open] summary { margin-bottom: 6px; }
+
+.foot { padding: 16px; color: var(--c-muted); font-size: 12px; text-align: center; }
+
+/* Узкий экран: скриншоты под текстом */
+@media (max-width: 760px) {
+  .step { grid-template-columns: 1fr; }
+  .flow { flex-direction: column; }
+  .flow__arrow { transform: rotate(90deg); }
+}
+
+/* Печать / сохранение в PDF */
+@media print {
+  body { background: #fff; }
+  .toc { display: none; }
+  html { font-size: 13px; }
+  body { font-size: 13px; }
+  main { padding: 0; }
+  .card { padding: 14px 18px; margin-bottom: 12px; break-inside: auto; }
+  .step { grid-template-columns: 1fr 240px; }
+  figure { break-inside: avoid; }
+  .step .wide img { max-height: 560px; width: auto; max-width: 100%; margin: 0 auto; }
+}

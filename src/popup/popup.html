@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Confluence Change Analyzer</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="header">
+    <img class="header__logo" src="icons/icon32.png" alt="" width="20" height="20" />
+    <span class="header__title">Confluence Change Analyzer</span>
+    <!-- Кнопки справа: инструкция и настройки -->
+    <button class="icon-btn" id="btn-help" title="Инструкция" aria-label="Инструкция">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.3-2.7 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.2" fill="currentColor"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-settings" title="Настройки" aria-label="Настройки">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.7 1.7 1l.4 2.6c0 .3.2.5.5.5h4c.3 0 .5-.2.5-.4l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>
+    </button>
+  </header>
+
+  <!-- Переключатель вкладок -->
+  <nav class="tabs" role="tablist">
+    <button class="tabs__btn is-active" role="tab" aria-selected="true" data-tab="analysis">Анализ</button>
+    <button class="tabs__btn" role="tab" aria-selected="false" data-tab="task">Статус задачи</button>
+  </nav>
+
+  <!-- ===================== Вкладка «Анализ» ===================== -->
+  <section class="panel is-active" id="panel-analysis" role="tabpanel">
+    <button class="btn btn--primary btn--block" id="btn-analyze">Анализ</button>
+
+    <!-- Статус последнего анализа -->
+    <div class="status" id="analysis-status">Анализ ещё не выполнялся</div>
+
+    <!-- Фильтры (соответствуют колонкам таблицы «История изменений») -->
+    <fieldset class="filters" id="filters" disabled>
+      <legend class="filters__legend">Фильтры <span class="hint">(условия объединяются по «И»)</span></legend>
+
+      <label class="field" data-filter="date">
+        <span class="field__label">Дата изменения</span>
+        <select class="field__control" id="filter-date">
+          <option value="">Все даты</option>
+        </select>
+      </label>
+
+      <label class="field" data-filter="author">
+        <span class="field__label">Автор</span>
+        <select class="field__control" id="filter-author">
+          <option value="">Все авторы</option>
+        </select>
+      </label>
+
+      <label class="field" data-filter="jira">
+        <span class="field__label">Артефакт Jira</span>
+        <select class="field__control" id="filter-jira">
+          <option value="">Все задачи</option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-highlight">Подсветить</button>
+        <button class="btn" id="btn-clear">Сбросить</button>
+      </div>
+      <!-- Результат подсветки на странице -->
+      <div class="status status--compact" id="highlight-status" hidden></div>
+    </fieldset>
+
+    <!-- Найденные записи истории -->
+    <div class="results">
+      <div class="results__head">
+        <span>Записи истории</span>
+        <span class="badge" id="entries-count">0</span>
+      </div>
+      <ul class="entries" id="entries-list">
+        <li class="empty">Нажмите «Анализ», чтобы загрузить историю изменений</li>
+      </ul>
+    </div>
+
+    <!-- Экспорт: что именно выгружать в Word -->
+    <div class="export">
+      <span class="field__label">Что выгрузить в Word</span>
+      <label class="radio">
+        <input type="radio" name="export-mode" value="changes" checked />
+        <span><b>Только найденные правки</b> — по пунктам: где находятся в документе и сам цветной текст</span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="export-mode" value="history" />
+        <span><b>Таблица истории</b> — записи «Истории изменений» по фильтру</span>
+      </label>
+      <button class="btn btn--block" id="btn-export" disabled>Скачать Word</button>
+      <div class="status status--compact" id="export-status" hidden></div>
+    </div>
+  </section>
+
+  <!-- ===================== Вкладка «Статус задачи» ===================== -->
+  <section class="panel" id="panel-task" role="tabpanel" hidden>
+    <label class="field">
+      <span class="field__label">ID задачи</span>
+      <div class="inline">
+        <input class="field__control" id="task-id" type="text" placeholder="Например, PLATFORM-11717" autocomplete="off" />
+        <button class="btn btn--primary" id="btn-find-task">Найти</button>
+      </div>
+    </label>
+
+    <div class="results">
+      <div class="results__head">
+        <span>Упоминания в истории</span>
+        <span class="badge" id="task-count">0</span>
+      </div>
+      <ul class="entries" id="task-results">
+        <li class="empty">Введите ID задачи и нажмите «Найти»</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== Настройки (открываются шестерёнкой) ===================== -->
+  <section class="panel" id="panel-settings" hidden>
+    <div class="settings__head">
+      <button class="btn btn--link" id="btn-settings-back">← Назад</button>
+      <span class="settings__title">Настройки</span>
+    </div>
+
+    <div class="settings__group">
+      <div class="settings__group-title">Фильтры на вкладке «Анализ»</div>
+      <p class="hint">Выключенный фильтр скрывается и не участвует в подсветке и экспорте.</p>
+
+      <label class="switch">
+        <input type="checkbox" data-setting="filters.date" />
+        <span class="switch__slider"></span>
+        <span class="switch__text">Дата изменения</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" data-setting="filters.author" />
+        <span class="switch__slider"></span>
+        <span class="switch__text">Автор</span>
+      </label>
+      <label class="switch is-locked" title="Фильтр по задаче отключить нельзя">
+        <input type="checkbox" data-setting="filters.jira" checked disabled />
+        <span class="switch__slider"></span>
+        <span class="switch__text">Артефакт Jira <span class="hint">— всегда включён</span></span>
+      </label>
+    </div>
+
+    <div class="settings__group">
+      <div class="settings__group-title">Поиск на странице</div>
+      <label class="switch">
+        <input type="checkbox" data-setting="autoExpand" />
+        <span class="switch__slider"></span>
+        <span class="switch__text">Раскрывать свёрнутые блоки перед поиском</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" data-setting="showCounter" />
+        <span class="switch__slider"></span>
+        <span class="switch__text">Показывать на странице счётчик «Найдено N»</span>
+      </label>
+    </div>
+
+    <button class="btn btn--block" id="btn-settings-reset">Сбросить настройки</button>
+    <div class="status" id="settings-status" hidden></div>
+  </section>
+
+  <footer class="footer">Данные обрабатываются локально и никуда не отправляются</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
