@@ -5,7 +5,7 @@ const [SP, DIST, FX, OUT] = process.argv.slice(2);
 let failed = 0;
 const check = (name, cond, got) => { console.log(`${cond ? 'OK  ' : 'FAIL'} ${name}${cond ? '' : ' → ' + JSON.stringify(got)}`); if (!cond) failed++; };
 const V = (number, when, name) => ({ number, when, message: '', by: { displayName: name } });
-const ALL = [V(4, '2026-09-30T15:00:00Z', 'Изюмский Иван'), V(3, '2026-09-30T11:00:00Z', 'Кусков Евгений'), V(2, '2026-09-17T10:00:00Z', 'Кедрова Татьяна'), V(1, '2026-07-14T09:00:00Z', 'Изюмский Иван')];
+const ALL = [V(4, '2026-09-30T15:00:00Z', 'Иванов Иван'), V(3, '2026-09-30T11:00:00Z', 'Сидоров Пётр'), V(2, '2026-09-17T10:00:00Z', 'Петрова Анна'), V(1, '2026-07-14T09:00:00Z', 'Иванов Иван')];
 const requests = [];
 const server = http.createServer((req, res) => {
   requests.push(req.url);

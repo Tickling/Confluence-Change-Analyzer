@@ -71,7 +71,7 @@ const readDocx = (file) => {
   };
 
   await run('view-11717', 'clto-15.html', { jira: 'PLATFORM-11717' });
-  await run('view-kedrova', 'clto-15.html', { author: 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)' });
+  await run('view-petrova', 'clto-15.html', { author: 'Петрова Анна Сергеевна (Anna Petrova)' });
   await run('server-11717', 'clto-15-edit-server.html', { jira: 'PLATFORM-11717' });
   await run('cloud-11717', 'clto-15-edit-cloud.html', { jira: 'PLATFORM-11717' });
   await run('history-all', 'clto-15.html', { mode: 'history' });
@@ -82,9 +82,9 @@ const readDocx = (file) => {
   let d = readDocx(files['view-11717']);
   console.log(d.paras.map((p) => '  | ' + p).join('\n'));
   const has = (re) => d.paras.some((p) => re.test(p));
-  check('шапка: автор Кусков', has(/^Автор: Кусков Евгений Павлович/), null);
+  check('шапка: автор Сидоров', has(/^Автор: Сидоров Пётр Павлович/), null);
   check('шапка: дата изменения и описание', has(/^Дата изменения: 30 сент\. 2026/) && has(/^Описание: Реализовать развилку/), null);
-  check('свойства файла: автор = Кусков', /Кусков/.test(d.creator), d.creator);
+  check('свойства файла: автор = Сидоров', /Сидоров/.test(d.creator), d.creator);
   check('4 пункта', d.paras.filter((p) => /^Пункт \d$/.test(p)).length === 4, d.paras.filter((p) => /^Пункт/.test(p)));
   check('пункт 1: Вариант использования › Описание алгоритма › Шаг 8', has(/^Расположение: Вариант использования › Описание алгоритма › Шаг 8$/), null);
   check('пункт 1: после текста шага 7', d.paras.some((p) => /^После текста: «.*при выполнении условий\.»$/.test(p)), null);
@@ -100,12 +100,12 @@ const readDocx = (file) => {
   check('пункты списка выгружены зелёным (цвет задан на списке)', /w:val="36B37E"/.test(liRun), liRun.slice(0, 300));
   check('нет плашек «СТАТУС» в тексте правок', !d.paras.some((p) => /СТАТУС/.test(p)), null);
 
-  console.log('\n=== view-kedrova');
-  d = readDocx(files['view-kedrova']);
+  console.log('\n=== view-petrova');
+  d = readDocx(files['view-petrova']);
   const rows = d.paras.filter((p) => /^Расположение/.test(p));
   console.log(rows.map((p) => '  | ' + p).join('\n'));
   check('3 пункта: «Кого вызывает», строка docStatus, шаг 7', rows.length === 3 && /Кого вызывает/.test(rows[0]) && /Строка «docStatus»/.test(rows[1]) && /Шаг 7/.test(rows[2]), rows);
-  check('автор в шапке и цвет D04498', d.paras.some((p) => /^Автор: Кедрова/.test(p)) && d.colors.includes('D04498'), d.colors);
+  check('автор в шапке и цвет D04498', d.paras.some((p) => /^Автор: Петрова/.test(p)) && d.colors.includes('D04498'), d.colors);
 
   for (const k of ['server-11717', 'cloud-11717']) {
     console.log(`\n=== ${k}`);

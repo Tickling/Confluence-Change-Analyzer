@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
   if (u.pathname === '/rest/experimental/content/483506343/version') {
     const V = (number, when, name) => ({ number, when, message: '', by: { displayName: name } });
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ results: [V(3, '2026-09-30T11:00:00Z', 'Кусков Евгений'), V(2, '2026-09-17T10:00:00Z', 'Кедрова Татьяна'), V(1, '2026-07-14T09:00:00Z', 'Изюмский Иван')] }));
+    return res.end(JSON.stringify({ results: [V(3, '2026-09-30T11:00:00Z', 'Сидоров Пётр'), V(2, '2026-09-17T10:00:00Z', 'Петрова Анна'), V(1, '2026-07-14T09:00:00Z', 'Иванов Иван')] }));
   }
   if (u.pathname.includes('/version')) { res.writeHead(404); return res.end(); }
   const m = u.pathname.match(/^\/pages\/(.+)$/);
@@ -81,21 +81,21 @@ const server = http.createServer((req, res) => {
   await popup.screenshot({ path: `${OUT}/popup-filter-jira.png`, fullPage: true });
   await page.waitForTimeout(1200); await page.screenshot({ path: `${OUT}/page-filter-jira.png` });
 
-  await select(popup, { author: 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)' });
+  await select(popup, { author: 'Петрова Анна Сергеевна (Anna Petrova)' });
   r = await highlight(popup); p = await onPage(page);
-  check('автор Кедрова → версия 2 → 3 розовые правки (вкл. строку docStatus)', r.shown.join() === '2' && p.wraps === 3 && p.texts.some((t) => /docStatus/.test(t)), { r, p });
+  check('автор Петрова → версия 2 → 3 розовые правки (вкл. строку docStatus)', r.shown.join() === '2' && p.wraps === 3 && p.texts.some((t) => /docStatus/.test(t)), { r, p });
 
-  await select(popup, { author: 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)', jira: 'PLATFORM-10842' });
+  await select(popup, { author: 'Петрова Анна Сергеевна (Anna Petrova)', jira: 'PLATFORM-10842' });
   r = await highlight(popup); p = await onPage(page);
-  check('автор Кедрова И задача 10842 → 2 правки (docStatus без задачи исключён)', p.wraps === 2 && !p.texts.some((t) => /docStatus/.test(t)), p);
+  check('автор Петрова И задача 10842 → 2 правки (docStatus без задачи исключён)', p.wraps === 2 && !p.texts.some((t) => /docStatus/.test(t)), p);
 
   await select(popup, { date: '2026-09-30' });
   r = await highlight(popup); p = await onPage(page);
   check('дата 30 сент. → версия 3 → 4 зелёные правки', r.shown.join() === '3' && p.wraps === 4, { r, p });
 
-  await select(popup, { date: '2026-07-14', author: 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)' });
+  await select(popup, { date: '2026-07-14', author: 'Петрова Анна Сергеевна (Anna Petrova)' });
   r = await highlight(popup); p = await onPage(page);
-  check('И: дата 14 июл. + автор Кедрова → нет записей, подсветка снята', /Нет записей/.test(r.status) && p.wraps === 0 && r.count === '0 из 3', { r, p });
+  check('И: дата 14 июл. + автор Петрова → нет записей, подсветка снята', /Нет записей/.test(r.status) && p.wraps === 0 && r.count === '0 из 3', { r, p });
 
   await select(popup, { jira: 'PLATFORM-9209' });
   r = await highlight(popup);
@@ -115,7 +115,7 @@ const server = http.createServer((req, res) => {
   check('фильтр запомнился для страницы', restored.jira === 'PLATFORM-11717' && restored.count === '1 из 3', restored);
 
   // Настройки: выключаем фильтр «Автор» — его значение не учитывается
-  await popup.selectOption('#filter-author', 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)');
+  await popup.selectOption('#filter-author', 'Петрова Анна Сергеевна (Anna Petrova)');
   await popup.waitForTimeout(350);
   await popup.click('#btn-settings');
   await popup.click('label.switch:has([data-setting="filters.author"])');

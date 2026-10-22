@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   if (u.pathname === '/rest/experimental/content/483506343/version') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ results: [V(3, '2026-09-30T11:00:00Z', 'Кусков Евгений', 'PLATFORM-11717: развилка «Принять решение» / «Проверить неоплаченный СА»'), V(2, '2026-09-17T10:00:00Z', 'Кедрова Татьяна'), V(1, '2026-07-14T09:00:00Z', 'Изюмский Иван')] }));
+    return res.end(JSON.stringify({ results: [V(3, '2026-09-30T11:00:00Z', 'Сидоров Пётр', 'PLATFORM-11717: развилка «Принять решение» / «Проверить неоплаченный СА»'), V(2, '2026-09-17T10:00:00Z', 'Петрова Анна'), V(1, '2026-07-14T09:00:00Z', 'Иванов Иван')] }));
   }
   const m = u.pathname.match(/^\/pages\/(.+)$/);
   if (!m) { res.writeHead(404); return res.end(); }
@@ -127,7 +127,7 @@ const server = http.createServer((req, res) => {
   console.log(JSON.stringify(r.card), JSON.stringify(r.groups['Документ']));
   check('статус из макроса: «В работе»', r.card?.status === 'В работе', r.card);
   check('упоминание в заголовке раздела', r.groups['Документ']?.some((d) => d.role === 'Заголовок раздела' && /Блок «Решение по выплате»/.test(d.meta)), r.groups['Документ']);
-  check('история: версия 17, Болотский', /Версия 17 .*Болотский/.test(r.groups['История изменений']?.[0]?.meta || ''), r.groups['История изменений']);
+  check('история: версия 17, Новиков', /Версия 17 .*Новиков/.test(r.groups['История изменений']?.[0]?.meta || ''), r.groups['История изменений']);
   r = await find(popup, 'PLATFORM-10119');
   const h10119 = r.groups['История изменений'] || [];
   check('PLATFORM-10119: «Причина изменения» в версиях 10 и 12, «впервые» — версия 10', h10119.length === 2 && h10119.every((h) => /^Причина изменения/.test(h.role)) && /Версия 10/.test(h10119[0].meta) && h10119[0].first, h10119);

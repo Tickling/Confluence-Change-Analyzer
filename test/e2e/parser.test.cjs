@@ -9,9 +9,9 @@ const server = http.createServer((req, res) => {
   fs.readFile(file, (err, data) => { if (err) { res.writeHead(404); res.end(); return; } res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(data); });
 });
 const EXPECTED = [
-  { version: '1', dateISO: '2026-07-14', author: 'Изюмский Иван Игоревич (Ivan Izyumsky)', jiraKeys: ['PLATFORM-9209'], color: null, reasonKeys: [] },
-  { version: '2', dateISO: '2026-09-17', author: 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)', jiraKeys: ['PLATFORM-10842'], color: 'D04498', reasonKeys: ['PLATFORM-9135'] },
-  { version: '3', dateISO: '2026-09-30', author: 'Кусков Евгений Павлович (Evgeniy Kuskov)', jiraKeys: ['PLATFORM-11717'], color: '36B37E', reasonKeys: [] },
+  { version: '1', dateISO: '2026-07-14', author: 'Иванов Иван Иванович (Ivan Ivanov)', jiraKeys: ['PLATFORM-9209'], color: null, reasonKeys: [] },
+  { version: '2', dateISO: '2026-09-17', author: 'Петрова Анна Сергеевна (Anna Petrova)', jiraKeys: ['PLATFORM-10842'], color: 'D04498', reasonKeys: ['PLATFORM-9135'] },
+  { version: '3', dateISO: '2026-09-30', author: 'Сидоров Пётр Павлович (Petr Sidorov)', jiraKeys: ['PLATFORM-11717'], color: '36B37E', reasonKeys: [] },
 ];
 (async () => {
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
@@ -64,7 +64,7 @@ const EXPECTED = [
       <tr><td>Иванов</td><td><span style="color:#FF5630">Первая правка</span> и чуть-чуть текста</td><td rowspan="2">05.10.2026</td><td><a href="https://jira.x/browse/ABC-1">ABC-1</a></td></tr>
       <tr><td>Петров</td><td><span style="background-color: rgb(255, 250, 230)">Вторая</span> правка</td><td><a href="https://jira.x/browse/ABC-2">ABC-2</a> CLTO-20</td></tr></table>`;
     const t = P.parseHistoryTable(document.getElementById('r'));
-    const v = P.parseVersionsResponse({ results: [{ number: 2, when: '2026-09-17T10:00:00.000+03:00', message: 'правка', by: { displayName: 'Кедрова' } }, { number: 3, when: '2026-09-30T12:00:00Z', message: '', by: { displayName: 'Кусков' } }] }, { baseUrl: 'https://c.x', pageId: '42' });
+    const v = P.parseVersionsResponse({ results: [{ number: 2, when: '2026-09-17T10:00:00.000+03:00', message: 'правка', by: { displayName: 'Петрова' } }, { number: 3, when: '2026-09-30T12:00:00Z', message: '', by: { displayName: 'Сидоров' } }] }, { baseUrl: 'https://c.x', pageId: '42' });
     return { dates, t, v };
   });
   const want = { '14 июл. 2026 г.': '2026-07-14', '17 сент. 2026 г.': '2026-09-17', '3 мая 2026': '2026-05-03', '1 марта 2025 г.': '2025-03-01', '14.07.2026': '2026-07-14', '2026-07-14': '2026-07-14', 'Jul 14, 2026': '2026-07-14', '14 Jul 2026': '2026-07-14', '31.02.2026': null, 'вчера': null };

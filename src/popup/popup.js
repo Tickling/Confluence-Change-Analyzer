@@ -490,7 +490,7 @@ function displayFilters() {
 /**
  * Короткое описание фильтра для имени файла.
  * @param {import('../lib/filters').FilterValues} f - значения фильтров
- * @returns {string} «PLATFORM-11717» / «Кусков» / «30 сент. 2026 г.»
+ * @returns {string} «PLATFORM-11717» / «Сидоров» / «30 сент. 2026 г.»
  */
 function filterLabel(f) {
   return [f.jira, f.author?.split(/\s+/)[0], f.date].filter(Boolean).join(' ');

@@ -56,7 +56,7 @@ const server = http.createServer((req, res) => {
     ['PLATFORM-8943 (два фрагмента в строке, задача абзацем ниже)', { jira: 'PLATFORM-8943' }, 2, /fractionSimple/],
     ['PLATFORM-5587 (в свёрнутом блоке)', { jira: 'PLATFORM-5587' }, 1, /Страховой акт/],
     ['PLATFORM-12154 (задача в том же абзаце)', { jira: 'PLATFORM-12154' }, 1, /пересчитывается/],
-    ['автор Кедрова (3 версии, 3 цвета)', { author: 'Кедрова Татьяна Сергеевна (Tatyana Kedrova)' }, 5, /./],
+    ['автор Петрова (3 версии, 3 цвета)', { author: 'Петрова Анна Сергеевна (Anna Petrova)' }, 5, /./],
   ];
   for (const [label, f, n, re] of cases) {
     const found = await hl(f);
@@ -82,9 +82,9 @@ const server = http.createServer((req, res) => {
   check('popup: «из них отменено: 1», у записи пометка «отменена»', /из них отменено: 1/.test(pop.status) && pop.badge === 'отменена' && pop.struck, pop);
   await page.waitForTimeout(800);
   await page.screenshot({ path: `${OUT}/doc2-cancelled.png` });
-  const ryab = await hl({ author: 'Рябец Антон Викторович (Anton Ryabets)' });
+  const ryab = await hl({ author: 'Козлов Дмитрий Викторович (Dmitry Kozlov)' });
   const ryabCancelled = await page.evaluate(() => document.querySelectorAll('#main-content .cfa-highlight--cancelled').length);
-  check('автор Рябец (версии 10 и 12): 2 правки, отменена только одна', ryab.length === 2 && ryabCancelled === 1, { ryab, ryabCancelled });
+  check('автор Козлов (версии 10 и 12): 2 правки, отменена только одна', ryab.length === 2 && ryabCancelled === 1, { ryab, ryabCancelled });
 
   // Шаг 4: в одной ячейке маджента (10661) и бирюзовый (5754) — бирюзовый абзац не относится к 10661
   const t5754 = await hl({ jira: 'PLATFORM-5754' });
@@ -115,7 +115,7 @@ const server = http.createServer((req, res) => {
   check('Word: оранжевый цвет FF8B00', /w:val="FF8B00"/.test(d.xml), null);
   check('Word: расположение «Варианты использования › Основной сценарий › Шаг 7»', d.paras.includes('Расположение: Варианты использования › Основной сценарий › Шаг 7'), d.paras.filter((p) => /Располож/.test(p)));
   check('Word: после текста «Сохранить изменения, вызвав…»', d.paras.some((p) => /^После текста: «Сохранить изменения, вызвав Сценарий CLTO-11\.03\.»$/.test(p)), null);
-  check('Word: автор Рябец в шапке', d.paras.some((p) => /^Автор: Рябец/.test(p)), null);
+  check('Word: автор Козлов в шапке', d.paras.some((p) => /^Автор: Козлов/.test(p)), null);
   check('Word: в шапке «Статус: правка отменена»', d.paras.includes('Статус: правка отменена'), d.paras.slice(0, 12));
   check('Word: у пункта «Статус: правка отменена (версия 10)…»', d.paras.some((p) => /^Статус: правка отменена \(версия 10\) — описание в «Истории изменений» зачёркнуто$/.test(p)), d.paras.filter((p) => /Статус/.test(p)));
   d = await exportDocx('PLATFORM-12096', 'doc2-12096.docx');
