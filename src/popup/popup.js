@@ -512,63 +512,47 @@ function setExportStatus(text, kind = 'info') {
 }
 
 /**
- * Кнопка «Скачать Word».
- *  - «Только найденные правки»: подсвечивает правки по текущим фильтрам (если ещё не подсвечены)
- *    и выгружает их по пунктам: расположение, «после текста», цветной фрагмент; в шапке — автор(ы).
- *  - «Таблица истории»: записи «Истории изменений» по текущим фильтрам.
+ * Кнопка «Скачать Word»: подсвечивает правки по текущим фильтрам (если ещё не подсвечены)
+ * и выгружает их по пунктам: расположение, «после текста», цветной фрагмент; в шапке — автор(ы).
  * @returns {Promise<void>}
  */
 async function exportWord() {
   if (!analysis) return;
   const btn = $('btn-export');
-  const mode = document.querySelector('input[name="export-mode"]:checked')?.value || 'changes';
   const filters = activeFilters(readFilters(), settings);
   const shown = displayFilters();
   const title = analysis.page.title || 'страница Confluence';
   setLoading(btn, true);
   setExportStatus('Формирование файла…');
   try {
+    const plan = buildHighlightPlan(analysis.entries, filters, settings);
+    if (!plan.ok) {
+      setExportStatus(plan.reason, 'warning');
+      return;
+    }
+    // Подсвечиваем заново, если фильтры менялись после последней подсветки
+    const same = lastHighlight && JSON.stringify(lastHighlight.filters) === JSON.stringify(readFilters());
+    if (!same) await highlight();
+    if (!lastHighlight?.count) {
+      setExportStatus('На странице нет правок по выбранному фильтру — выгружать нечего', 'warning');
+      return;
+    }
+    const res = await sendHighlight(MESSAGE_TYPES.GET_CHANGES);
+    if (!res?.ok) throw new Error(res?.error || 'Не удалось получить найденные правки');
     // Библиотека docx тяжёлая — загружаем её только при выгрузке, чтобы popup открывался быстро
-    const { buildChangesDocument, buildHistoryDocument, downloadDocument } = await import(
+    const { buildChangesDocument, downloadDocument } = await import(
       /* webpackChunkName: "exporter" */ '../lib/exporter'
     );
-    let fileName;
-    if (mode === 'history') {
-      const entries = filterEntries(analysis.entries, filters);
-      if (!entries.length) {
-        setExportStatus('Нет записей по выбранным фильтрам', 'warning');
-        return;
-      }
-      fileName = await downloadDocument(
-        buildHistoryDocument({ pageTitle: title, entries, filters: shown }),
-        `История изменений — ${title}`,
-      );
-    } else {
-      const plan = buildHighlightPlan(analysis.entries, filters, settings);
-      if (!plan.ok) {
-        setExportStatus(plan.reason, 'warning');
-        return;
-      }
-      // Подсвечиваем заново, если фильтры менялись после последней подсветки
-      const same = lastHighlight && JSON.stringify(lastHighlight.filters) === JSON.stringify(readFilters());
-      if (!same) await highlight();
-      if (!lastHighlight?.count) {
-        setExportStatus('На странице нет правок по выбранному фильтру — выгружать нечего', 'warning');
-        return;
-      }
-      const res = await sendHighlight(MESSAGE_TYPES.GET_CHANGES);
-      if (!res?.ok) throw new Error(res?.error || 'Не удалось получить найденные правки');
-      fileName = await downloadDocument(
-        buildChangesDocument({
-          pageTitle: title,
-          pageUrl: res.page?.url || analysis.page.url,
-          filters: shown,
-          entries: plan.entries,
-          changes: res.changes,
-        }),
-        `Правки ${filterLabel(shown) || 'все'} — ${title}`,
-      );
-    }
+    const fileName = await downloadDocument(
+      buildChangesDocument({
+        pageTitle: title,
+        pageUrl: res.page?.url || analysis.page.url,
+        filters: shown,
+        entries: plan.entries,
+        changes: res.changes,
+      }),
+      `Правки ${filterLabel(shown) || 'все'} — ${title}`,
+    );
     setExportStatus(`Сохранено в «Загрузки»: ${fileName}`, 'success');
   } catch (err) {
     log.error('Ошибка экспорта:', err);

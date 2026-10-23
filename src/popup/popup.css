@@ -170,8 +170,7 @@ body {
 
 /* --- Блок экспорта --- */
 .export { padding: 8px; border: 1px solid var(--c-border); border-radius: var(--radius); background: #fafbfc; }
-.radio { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; font-size: 12px; cursor: pointer; }
-.radio input { margin: 2px 0 0; }
+.export__hint { margin: 0 0 6px; font-size: 12px; }
 .export .btn { margin-top: 4px; }
 
 /* --- Кнопки-иконки в шапке --- */

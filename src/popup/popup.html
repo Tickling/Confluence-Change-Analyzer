@@ -75,17 +75,10 @@
       </ul>
     </div>
 
-    <!-- Экспорт: что именно выгружать в Word -->
+    <!-- Экспорт найденных правок в Word -->
     <div class="export">
-      <span class="field__label">Что выгрузить в Word</span>
-      <label class="radio">
-        <input type="radio" name="export-mode" value="changes" checked />
-        <span><b>Только найденные правки</b> — по пунктам: где находятся в документе и сам цветной текст</span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="export-mode" value="history" />
-        <span><b>Таблица истории</b> — записи «Истории изменений» по фильтру</span>
-      </label>
+      <span class="field__label">Выгрузка в Word</span>
+      <p class="export__hint">Найденные правки по пунктам: где находятся в документе и сам цветной текст</p>
       <button class="btn btn--block" id="btn-export" disabled>Скачать Word</button>
       <div class="status status--compact" id="export-status" hidden></div>
     </div>

@@ -1,16 +1,12 @@
 /**
- * Экспорт в Word (.docx) через библиотеку docx.
+ * Экспорт найденных правок в Word (.docx) через библиотеку docx.
  *
- * Режимы экспорта:
- *  1. «Найденные правки» — только фрагменты документа, найденные по фильтру
- *     (по задаче Jira и/или по цвету описания). Каждая правка — отдельный пункт:
- *       • где находится в документе (раздел › подраздел, «после текста …»);
- *       • сам фрагмент с сохранением исходного цвета.
- *  2. «Таблица истории» — таблица записей «Истории изменений»
- *     (Дата | Автор | Версия | Описание | Цвет | Задача | Ссылка на версию).
+ * Выгружаются только фрагменты документа, найденные по фильтру (по задаче Jira
+ * и/или по цвету описания). Каждая правка — отдельный пункт:
+ *   • где находится в документе (раздел › подраздел, «после текста …»);
+ *   • сам фрагмент с сохранением исходного цвета.
  */
 import {
-  AlignmentType,
   BorderStyle,
   Document,
   ExternalHyperlink,
@@ -18,11 +14,7 @@ import {
   Packer,
   Paragraph,
   ShadingType,
-  Table,
-  TableCell,
-  TableRow,
   TextRun,
-  WidthType,
 } from 'docx';
 import { colorToHex, log, safeFileName } from './utils';
 
@@ -242,69 +234,6 @@ export function buildChangesDocument({ pageTitle, pageUrl, filters, entries = []
     title: `Изменения: ${pageTitle || ''}`,
     styles: { default: { document: { run: { font: FONT, size: 22 } } } },
     sections: [{ children }],
-  });
-}
-
-/**
- * Ячейка таблицы истории.
- * @param {string|Paragraph[]} content - текст или готовые абзацы
- * @param {Object} [opts] - bold / fill
- * @returns {TableCell} ячейка
- */
-function cell(content, opts = {}) {
-  const children = Array.isArray(content)
-    ? content
-    : [new Paragraph({ children: [new TextRun({ text: content || '', bold: opts.bold, font: FONT, size: 20 })] })];
-  return new TableCell({
-    children,
-    shading: opts.fill ? { type: ShadingType.CLEAR, color: 'auto', fill: opts.fill } : undefined,
-  });
-}
-
-/**
- * Создаёт документ Word «Таблица истории изменений».
- * @param {Object} params
- * @param {string} params.pageTitle - название страницы
- * @param {import('./parser').HistoryEntry[]} params.entries - записи истории
- * @param {ExportFilters} params.filters - применённые фильтры
- * @returns {Document} документ docx
- */
-export function buildHistoryDocument({ pageTitle, entries, filters }) {
-  const header = ['Дата', 'Автор', 'Версия', 'Описание', 'Цвет', 'Задача', 'Ссылка на версию'];
-  const rows = [
-    new TableRow({ tableHeader: true, children: header.map((h) => cell(h, { bold: true, fill: 'F4F5F7' })) }),
-    ...entries.map((e) => {
-      const color = colorToHex(e.color);
-      return new TableRow({
-        children: [
-          cell(e.date),
-          cell(e.author),
-          cell(String(e.version ?? '')),
-          cell([new Paragraph({ children: [
-            new TextRun({ text: e.description || '', color: color || undefined, font: FONT, size: 20, strike: Boolean(e.cancelled) }),
-            ...(e.cancelled ? [new TextRun({ text: ' (отменена)', bold: true, color: 'DE350B', font: FONT, size: 20 })] : []),
-          ] })]),
-          cell(color ? `#${color}` : '—', { fill: color || undefined }),
-          cell((e.jiraKeys || []).join(', ')),
-          cell(e.versionUrl
-            ? [new Paragraph({ children: [new ExternalHyperlink({ link: e.versionUrl, children: [new TextRun({ text: 'Открыть', style: 'Hyperlink', font: FONT, size: 20 })] })] })]
-            : '—'),
-        ],
-      });
-    }),
-  ];
-
-  return new Document({
-    creator: 'Confluence Change Analyzer',
-    title: `История изменений: ${pageTitle || ''}`,
-    sections: [{
-      properties: { page: { size: { orientation: 'landscape' } } },
-      children: [
-        new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun({ text: `История изменений: ${pageTitle || ''}`, font: FONT })] }),
-        labeledParagraph('Фильтр', describeFilters(filters)),
-        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows, alignment: AlignmentType.CENTER }),
-      ],
-    }],
   });
 }
 

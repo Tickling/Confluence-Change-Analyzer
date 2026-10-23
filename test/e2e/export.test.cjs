@@ -34,7 +34,7 @@ const readDocx = (file) => {
   await helper.goto(`chrome-extension://${id}/popup.html`);
   const files = {};
 
-  const run = async (label, file, { jira = '', author = '', mode = 'changes' }) => {
+  const run = async (label, file, { jira = '', author = '' }) => {
     const url = `${base}/pages/${file}`;
     const page = await ctx.newPage();
     await page.goto(url); await page.waitForTimeout(700);
@@ -47,7 +47,7 @@ const readDocx = (file) => {
     await popup.selectOption('#filter-jira', jira);
     await popup.selectOption('#filter-author', author);
     await popup.waitForTimeout(300);
-    await popup.check(`input[name="export-mode"][value="${mode}"]`);
+    check('в окне нет выбора режима — только «найденные правки»', (await popup.locator('input[name="export-mode"]').count()) === 0, null);
     const before = await helper.evaluate(async () => (await chrome.downloads.search({})).length);
     await popup.click('#btn-export');
     await popup.waitForFunction(() => {
@@ -74,7 +74,6 @@ const readDocx = (file) => {
   await run('view-petrova', 'clto-15.html', { author: 'Петрова Анна Сергеевна (Anna Petrova)' });
   await run('server-11717', 'clto-15-edit-server.html', { jira: 'PLATFORM-11717' });
   await run('cloud-11717', 'clto-15-edit-cloud.html', { jira: 'PLATFORM-11717' });
-  await run('history-all', 'clto-15.html', { mode: 'history' });
   await ctx.close(); server.close();
 
   // ---------- Содержимое файлов ----------
@@ -115,12 +114,6 @@ const readDocx = (file) => {
     check(`${k}: в расположении нет «Строка «{…»» (макрос — не строка таблицы)`, !r.some((p) => /Строка «\{/.test(p)), r);
     check(`${k}: 2 пункта, шаг 8 и блок примера`, d.paras.filter((p) => /^Пункт \d$/.test(p)).length === 2 && /Шаг 8/.test(r[0]) && r.some((p) => /блок «Ответ при развилке»/.test(p)), r);
   }
-
-  console.log('\n=== history-all');
-  d = readDocx(files['history-all']);
-  check('таблица: заголовки колонок', ['Дата', 'Автор', 'Версия', 'Описание', 'Цвет', 'Задача', 'Ссылка на версию'].every((h) => d.paras.includes(h)), d.paras.slice(0, 12));
-  check('таблица: 3 записи с задачами', ['PLATFORM-9209', 'PLATFORM-10842', 'PLATFORM-11717'].every((k) => d.paras.includes(k)), null);
-  check('таблица: ячейка цвета залита цветом', /<w:shd [^>]*w:fill="36B37E"/.test(d.xml), null);
 
   // ---------- Открывается ли в LibreOffice ----------
   console.log('\n=== LibreOffice');

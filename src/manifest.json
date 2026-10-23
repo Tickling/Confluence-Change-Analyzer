@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Confluence Change Analyzer",
   "short_name": "CFA",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Анализ истории изменений страниц Confluence: фильтры, подсветка, статус задач, экспорт в Word.",
   "icons": {
     "16": "icons/icon16.png",
