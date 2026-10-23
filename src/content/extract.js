@@ -6,7 +6,7 @@
  *  - сам фрагмент: абзацы и пункты списков с цветом, жирным, курсивом и ссылками.
  * Работает одинаково в просмотре и в редакторах (DOM не меняется).
  */
-import { getElementColor, log } from '../lib/utils';
+import { computedColor, getElementColor, log, renderedTextColor } from '../lib/utils';
 
 /** Элементы, текст которых в выгрузку не попадает (плашки задач, служебные элементы) */
 const SKIP_SELECTOR = [
@@ -208,6 +208,8 @@ function runFormat(node, block, root) {
     if (el === block) pastBlock = true;
     if (/^(TD|TH)$/.test(el.tagName)) break;
   }
+  // Цвет задан CSS-классом или темой — фактический цвет текста
+  if (!color) color = renderedTextColor(node, root, computedColor(root));
   return { color, backgroundColor, bold, italic, strike, href };
 }
 

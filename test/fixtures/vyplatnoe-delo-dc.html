@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Тестовая страница по образцу документа «Выплатное дело. Детали события» (Confluence Data Center 8+, просмотр).
+       Цвета заданы так, как это делают новые версии Confluence: CSS-переменные темы (с запасным цветом и без),
+       CSS-классы. Рядом — элементы со «своим» цветом, которые правками не являются: ссылки, @упоминания,
+       плашки дат, заголовок свёрнутого блока, подсветка кода. ФИО вымышленные. -->
+  <meta name="ajs-page-id" content="445080454" />
+  <meta name="ajs-page-title" content="2. Выплатное дело. Детали события" />
+  <meta name="confluence-base-url" content="https://confluence.example" />
+  <title>2. Выплатное дело. Детали события - Confluence</title>
+  <style>
+    :root {
+      --ds-text: #172b4d;
+      --ds-link: #0c66e4;
+      --ds-text-accent-orange: #ff9966;
+      --ds-text-accent-red: #de350b;
+      --ds-text-accent-green: #5b7f24;
+    }
+    body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ds-text); }
+    #main { max-width: 1100px; margin: 0 auto; padding: 16px 24px 60px; }
+    table.confluenceTable { border-collapse: collapse; width: 100%; margin: 6px 0 12px; }
+    .confluenceTh, .confluenceTd { border: 1px solid #c1c7d0; padding: 6px 10px; vertical-align: top; text-align: left; }
+    .confluenceTh { background: #f4f5f7; }
+    a { color: var(--ds-link); text-decoration: none; }
+    /* Цвет текста, заданный классом (без inline-стиля) */
+    .text-color-purple { color: #8777d9; }
+    /* Служебные элементы со своим цветом */
+    .user-mention { color: #0c66e4; background: #e9f2ff; border-radius: 10px; padding: 0 4px; }
+    .user-mention.current-user-mention { color: #fff; background: #0c66e4; }
+    time.date-past { color: #42526e; background: #f4f5f7; border-radius: 3px; padding: 0 4px; }
+    .jira-issue { display: inline-flex; gap: 4px; padding: 1px 6px; border: 1px solid #dfe1e6; border-radius: 3px; background: #fafbfc; font-size: 12px; }
+    .jira-issue .summary { color: #8777d9; }
+    .aui-lozenge { padding: 0 4px; border: 1px solid #c1c7d0; border-radius: 3px; font-size: 10px; font-weight: 700; color: #42526e; }
+    .expand-control { cursor: pointer; color: #0c66e4; } .expand-hidden { display: none; } .expand-content { padding-left: 16px; }
+    .code .keyword { color: #0052cc; font-weight: bold; } .code .string { color: #00875a; }
+  </style>
+</head>
+<body><div id="main">
+<h1 id="title-text">2. Выплатное дело. Детали события</h1>
+<div id="main-content" class="wiki-content">
+
+<h2>История изменений</h2>
+<div class="table-wrap"><table class="confluenceTable"><tbody>
+<tr><th class="confluenceTh">№</th><th class="confluenceTh">Дата изменения</th><th class="confluenceTh">Причина изменения</th><th class="confluenceTh">Описание</th><th class="confluenceTh">Автор</th><th class="confluenceTh">Ревью</th><th class="confluenceTh">Артефакт Jira</th></tr>
+<tr><td class="confluenceTd">1</td><td class="confluenceTd"><time datetime="2026-02-18" class="date-past">18 февр. 2026 г.</time></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><p>Создание нового документа</p></td>
+  <td class="confluenceTd"><a class="confluence-userlink user-mention" data-username="vmorozova" href="#">Морозова Виктория Игоревна (Viktoriya Morozova)</a></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PROD-45031">PROD-45031</a> <span class="summary">Новый документ</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></td></tr>
+<tr><td class="confluenceTd">5</td><td class="confluenceTd"><time datetime="2026-05-18" class="date-past">18 мая 2026 г.</time></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><p><span class="text-color-purple">Редактирование персоны</span></p><p><span class="text-color-purple">Добавление реквизитов</span></p></td>
+  <td class="confluenceTd"><a class="confluence-userlink user-mention" data-username="apetrova" href="#">Петрова Анна Сергеевна (Anna Petrova)</a></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PROD-53330">PROD-53330</a> <span class="summary">Персона</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></td></tr>
+<tr><td class="confluenceTd">7</td><td class="confluenceTd"><time datetime="2026-06-05" class="date-past">5 июн. 2026 г.</time></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><p><span style="color: var(--ds-text-accent-green, rgb(101, 132, 41));">В сайд-баре в Заявлениях добавлено поле "Создал"</span></p></td>
+  <td class="confluenceTd"><a class="confluence-userlink user-mention" data-username="olebedev" href="#">Лебедев Олег Владимирович (Oleg Lebedev)</a></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PROD-54724">PROD-54724</a> <span class="summary">Создал</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></td></tr>
+<tr><td class="confluenceTd">10</td><td class="confluenceTd"><time datetime="2026-06-29" class="date-past">29 июн. 2026 г.</time></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><p><span style="color: var(--ds-text-accent-red);">Скорректирована логика по формированию при сохранении данных блока claimsApplication.payRecipients для сценария <a href="#">Создания получателя Иное лицо</a></span></p></td>
+  <td class="confluenceTd"><a class="confluence-userlink user-mention" data-username="apetrova" href="#">Петрова Анна Сергеевна (Anna Petrova)</a></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-5619">PLATFORM-5619</a> <span class="summary">Иное лицо</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></td></tr>
+<tr><td class="confluenceTd">11</td><td class="confluenceTd"><time datetime="2026-08-20" class="date-past">20 авг. 2026 г.</time></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><p><span style="color: var(--ds-text-accent-orange);">Добавлен шаг 5 сохранение персоны в альтернативном сценарии 0</span></p></td>
+  <td class="confluenceTd"><a class="confluence-userlink user-mention current-user-mention" data-username="iivanov" href="#">Иванов Иван Иванович (Ivan Ivanov)</a></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-9070">PLATFORM-9070</a> <span class="summary">[WEB] 2. Выплатное дело. Детали события - передавать persons.documents.isDeleted при сохранении данных персоны</span> <span class="aui-lozenge">ТЕСТИРОВАНИЕ</span></span></td></tr>
+</tbody></table></div>
+
+<h2>Варианты использования</h2>
+<h3>Основной сценарий</h3>
+<p>Пользователь открыл карточку выплатного дела. Ответственный: <a class="confluence-userlink user-mention" href="#">Морозова Виктория Игоревна</a>, срок <time datetime="2026-03-01" class="date-past">1 мар. 2026 г.</time>.</p>
+<p><span class="text-color-purple">В карточке персоны отображать блок «Реквизиты» и кнопку «Добавить получателя платежа».</span></p>
+<p><span class="jira-issue"><a href="https://jira.example/browse/PROD-53330">PROD-53330</a> <span class="summary">Персона</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></p>
+
+<h3>Альтернативный сценарий 0. Редактирование персоны</h3>
+<div class="table-wrap"><table class="confluenceTable"><tbody>
+<tr><th class="confluenceTh">№</th><th class="confluenceTh">Наименование шага</th><th class="confluenceTh">Описание шага сценария</th><th class="confluenceTh">Комментарий</th></tr>
+<tr><td class="confluenceTd">4</td><td class="confluenceTd">Редактирование данных персоны</td>
+  <td class="confluenceTd"><p>Пользователь изменяет данные персоны на форме.</p></td><td class="confluenceTd"></td></tr>
+<tr><td class="confluenceTd">5</td>
+  <td class="confluenceTd"><span style="color: var(--ds-text-accent-orange);">Сохранение данных персоны</span></td>
+  <td class="confluenceTd">
+    <p><span style="color: var(--ds-text-accent-orange);">Пользователь нажимает кнопку «Сохранить».</span></p>
+    <p><span style="color: var(--ds-text-accent-orange);">Для сохранения данных фронт вызывает Сценарий <a href="#">Сценарий CLO-17.02 Работа с вовлеченными сторонами заявления</a>, в который передает:</span></p>
+    <ul style="color: var(--ds-text-accent-orange);">
+      <li>Идентификатор запроса в Импульс - requestId</li>
+      <li>ID заявления - claimsApplication.id</li>
+    </ul>
+    <ol style="color: var(--ds-text-accent-orange);">
+      <li>Блок «Паспортные данные» заполнен и изменен - передавать документ с persons.documents.isDeleted = false.</li>
+      <li><span style="text-decoration: line-through;">Пользователь очистил только поле «Адрес регистрации» - признак удаления не выставляется.</span></li>
+    </ol>
+  </td>
+  <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-9070">PLATFORM-9070</a> <span class="summary">[WEB] 2. Выплатное дело. Детали события - передавать persons.documents.isDeleted при сохранении данных персоны</span> <span class="aui-lozenge">ТЕСТИРОВАНИЕ</span></span></td></tr>
+</tbody></table></div>
+
+<h3>Альтернативный сценарий 4. Получатель платежа</h3>
+<p>Получатель выбирается из списка вовлечённых сторон.</p>
+<p><span style="color: var(--ds-text-accent-red);">Для сценария создания получателя «Иное лицо» payRecipients формировать из данных формы.</span> <span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-5619">PLATFORM-5619</a> <span class="summary">Иное лицо</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></p>
+
+<h3>Сайд-бар</h3>
+<p><span style="color: var(--ds-text-accent-green, rgb(101, 132, 41));">Поле «Создал»: фамилия и инициалы пользователя, который зарегистрировал заявление.</span></p>
+<p><span class="jira-issue"><a href="https://jira.example/browse/PROD-54724">PROD-54724</a> <span class="summary">Создал</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></p>
+
+<h3>Пример запроса</h3>
+<div class="expand-container"><div class="expand-control"><span class="expand-control-text">Показать пример запроса</span></div>
+<div class="expand-content expand-hidden">
+  <div class="code"><pre><span class="keyword">POST</span> /api/persons <span class="string">"isDeleted": false</span></pre></div>
+</div></div>
+
+</div></div>
+<script>
+document.querySelectorAll('.expand-control').forEach(function (c) { c.addEventListener('click', function () {
+  c.parentElement.querySelector('.expand-content').classList.toggle('expand-hidden'); }); });
+</script>
+</body></html>

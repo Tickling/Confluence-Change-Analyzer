@@ -9,7 +9,7 @@
  *    (Server 6.x+: /rest/experimental/content/{id}/version, Cloud: /wiki/rest/api/content/{id}/version).
  */
 import { HISTORY_COLUMN_ALIASES } from './constants';
-import { colorToHex, extractIssueKeys, getElementColor, log, normalizeText } from './utils';
+import { colorToHex, computedColor, extractIssueKeys, getElementColor, log, normalizeText, renderedTextColor } from './utils';
 
 /**
  * @typedef {Object} HistoryEntry
@@ -202,6 +202,8 @@ function tableToGrid(table) {
 export function dominantColor(cell, kind = 'color') {
   const weights = new Map();
   const doc = cell.ownerDocument;
+  // Обычный цвет текста ячейки — для случаев, когда цвет задан классом/темой, а не в разметке
+  const base = kind === 'color' ? computedColor(cell) : null;
   const walker = doc.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
     const len = n.nodeValue.trim().length;
@@ -211,6 +213,7 @@ export function dominantColor(cell, kind = 'color') {
       color = kind === 'color' ? getElementColor(el, false) : getBackground(el);
       if (el === cell) break;
     }
+    if (!color && kind === 'color') color = renderedTextColor(n, cell, base);
     if (color && !isNeutral(color, kind)) weights.set(color, (weights.get(color) || 0) + len);
   }
   let best = null;
@@ -331,6 +334,10 @@ export function parseHistoryTableElement(table) {
     };
     // Пустые строки (шаблон таблицы без заполнения) не нужны
     if (!entry.description && !entry.date && !entry.author && !entry.jiraKeys.length) return;
+    // Для диагностики: описание есть, а цвет не определён — в консоль разметку ячейки
+    if (!entry.color && descCell && entry.description) {
+      log.info(`Версия ${entry.version}: цвет описания не определён. Разметка ячейки:`, descCell.innerHTML.slice(0, 600));
+    }
     entries.push(entry);
   });
   return entries;

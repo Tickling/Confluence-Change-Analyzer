@@ -16,7 +16,7 @@
  */
 import { HIGHLIGHT_CLASS, HIGHLIGHT_STRATEGY } from '../lib/constants';
 import { findHistoryTables } from '../lib/parser';
-import { colorToHex, debounce, extractIssueKeys, getElementColor, log, runIdle } from '../lib/utils';
+import { colorToHex, computedColor, debounce, extractIssueKeys, getElementColor, log, renderedTextColor, runIdle } from '../lib/utils';
 import { collapseBlocks, expandAll, splitByMatches } from './expander';
 
 /** Элементы, текст которых не считается правкой (макросы задач, служебные элементы) */
@@ -106,15 +106,17 @@ export function matchColor(hex, targets) {
  * Определяет явный цвет текстового узла: цвет ближайшего предка, у которого он задан.
  * @param {Text} node - текстовый узел
  * @param {Element} root - корень документа (выше не поднимаемся)
+ * @param {string|null} [base] - обычный цвет текста документа (для цветов, заданных классом/темой)
  * @returns {string|null} цвет HEX или null
  */
-function getTextNodeColor(node, root) {
+function getTextNodeColor(node, root, base = null) {
   for (let el = node.parentElement; el; el = el.parentElement) {
     const color = getElementColor(el, false);
     if (color) return color;
     if (el === root) break;
   }
-  return null;
+  // Цвет задан CSS-классом или темой Confluence — берём фактический цвет текста
+  return renderedTextColor(node, root, base);
 }
 
 /**
@@ -245,10 +247,11 @@ export async function findChanges(root, opts = {}) {
   const total = new Map();
   const colored = new Map();
   const matched = [];
+  const base = computedColor(root);
   for (const node of nodes) {
     const len = node.nodeValue.trim().length;
     // Правка может быть отмечена цветом текста или заливкой фона (маркером)
-    const color = matchColor(getTextNodeColor(node, root), targets) || matchColor(getTextNodeBackground(node, root), targets);
+    const color = matchColor(getTextNodeColor(node, root, base), targets) || matchColor(getTextNodeBackground(node, root), targets);
     if (color) matched.push({ node, color });
     for (let el = node.parentElement; el; el = el.parentElement) {
       total.set(el, (total.get(el) || 0) + len);

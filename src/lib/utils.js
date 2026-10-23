@@ -75,6 +75,10 @@ export function colorToHex(color) {
   if (!color) return null;
   const value = String(color).trim().toLowerCase();
 
+  // Confluence DC 8+/Cloud с поддержкой тем: color: var(--ds-text-accent-orange, #ff8b00) — берём запасной цвет
+  const cssVar = value.match(/^var\(\s*--[\w-]+\s*(?:,\s*(.+))?\)$/);
+  if (cssVar) return cssVar[1] ? colorToHex(cssVar[1]) : null;
+
   const rgb = value.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:[\s,/]+([\d.]+))?\s*\)$/);
   if (rgb) {
     if (rgb[4] !== undefined && Number(rgb[4]) === 0) return null;
@@ -122,17 +126,79 @@ export function getElementColor(el, useComputed = true) {
     const attr = el.getAttribute('data-text-custom-color');
     if (attr) return colorToHex(attr);
     const cssVar = el.style?.getPropertyValue('--custom-palette-color');
-    if (cssVar) return colorToHex(cssVar);
+    if (cssVar) return colorToHex(cssVar) || computedColor(el);
     if (el.tagName === 'FONT' && el.getAttribute('color')) return colorToHex(el.getAttribute('color'));
-    if (el.style?.color) return colorToHex(el.style.color);
-    if (useComputed) {
-      const view = el.ownerDocument?.defaultView;
-      return view ? colorToHex(view.getComputedStyle(el).color) : null;
+    // Цвет задан в style, но записан через CSS-переменную без запасного значения и т.п. —
+    // берём цвет, которым браузер фактически рисует текст
+    if (el.style?.color) {
+      // color: var(--…) — фактический цвет зависит от темы, поэтому берём то, что нарисовал браузер
+      if (/var\(/.test(el.style.color)) return computedColor(el) || colorToHex(el.style.color);
+      return colorToHex(el.style.color) || computedColor(el);
     }
+    if (useComputed) return computedColor(el);
   } catch (err) {
     log.warn('Не удалось определить цвет элемента:', err);
   }
   return null;
+}
+
+/**
+ * Цвет, которым браузер фактически рисует текст элемента (getComputedStyle).
+ * @param {Element} el - элемент
+ * @returns {string|null} цвет HEX без # или null
+ */
+export function computedColor(el) {
+  try {
+    const view = el?.ownerDocument?.defaultView;
+    return view ? colorToHex(view.getComputedStyle(el).color) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Элементы, цвет которых — оформление, а не правка: код, плашки Jira, статусы, упоминания, даты */
+const COLOR_SKIP_SELECTOR = [
+  'pre', 'code', '.code', '.codeContent', '.syntaxhighlighter', '.CodeMirror',
+  '.jira-issue', '[data-macro-name="jira"]', '.aui-lozenge', '.status-macro', '[data-inline-card]',
+  '.confluence-userlink', '.user-mention', '[data-mention-id]', '.mentionView-content-wrap',
+  'time', '.date-lozenger-container',
+  // Служебные элементы с цветом из темы: заголовки свёрнутых блоков, кнопки, заголовки панелей
+  'button', '.expand-control', '.aui-expander-trigger', '[data-testid*="expand-title"]', '.panelHeader',
+  '.confluence-information-macro-icon',
+].join(',');
+
+/**
+ * Цвет текстового узла, когда явного цвета в разметке нет (цвет задан CSS-классом или темой):
+ * фактический цвет текста, если он заметно отличается от обычного цвета текста вокруг (base).
+ * Ссылки рисуются своим цветом — для них берётся цвет окружающего текста.
+ * @param {Text} node - текстовый узел
+ * @param {Element} scope - граница поиска (ячейка таблицы или корень документа)
+ * @param {string|null} base - обычный цвет текста (HEX) в этой области
+ * @returns {string|null} цвет HEX или null
+ */
+export function renderedTextColor(node, scope, base) {
+  let el = node.parentElement;
+  if (!el || el.closest(COLOR_SKIP_SELECTOR)) return null;
+  while (el && el !== scope && el.tagName === 'A') el = el.parentElement;
+  const color = computedColor(el);
+  if (!color || !base) return null;
+  return colorDistance(color, base) > 24 ? color : null;
+}
+
+/**
+ * Расстояние между двумя цветами (евклидово в RGB).
+ * @param {string} a - цвет HEX без #
+ * @param {string} b - цвет HEX без #
+ * @returns {number} расстояние (0 — одинаковые цвета)
+ */
+export function colorDistance(a, b) {
+  const rgb = (h) => {
+    const n = parseInt(h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const [r1, g1, b1] = rgb(a);
+  const [r2, g2, b2] = rgb(b);
+  return Math.hypot(r1 - r2, g1 - g2, b1 - b2);
 }
 
 /**
