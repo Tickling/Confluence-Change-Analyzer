@@ -32,7 +32,8 @@ const server = http.createServer((req, res) => {
   const analysis = await helper.evaluate(async () => Object.values((await chrome.storage.local.get('cfa_analysis')).cfa_analysis).find((a) => a.page.pageId === '445080454'));
   const col = Object.fromEntries(analysis.entries.map((e) => [e.version, e.color]));
   console.log('  цвета описаний:', JSON.stringify(col));
-  check('5 записей истории', analysis.entries.length === 5, analysis.entries.length);
+  check('6 записей истории', analysis.entries.length === 6, analysis.entries.length);
+  check('версия 12: задача не прикреплена, цвет есть (00A3BF)', col['12'] === '00A3BF' && analysis.entries[5].jiraKeys.length === 0, analysis.entries[5]);
   check('версия 11: color: var(--ds-text-accent-orange) без запасного цвета → FF9966', col['11'] === 'FF9966', col);
   check('версия 10: var(--ds-text-accent-red) → DE350B (ссылка внутри описания не мешает)', col['10'] === 'DE350B', col);
   check('версия 7: var(--…, rgb(…)) → фактический цвет темы 5B7F24, а не запасной', col['7'] === '5B7F24', col);
@@ -63,8 +64,32 @@ const server = http.createServer((req, res) => {
   check('PROD-54724 (зелёный через var с запасным цветом) → 1', r.found.length === 1 && /Поле «Создал»/.test(r.found[0]), r);
   r = await hl({ author: 'Петрова Анна Сергеевна (Anna Petrova)' });
   check('автор Петрова (версии 5 и 10: класс и var) → 2 правки', r.found.length === 2 && r.found.some((t) => /Реквизиты/.test(t)) && r.found.some((t) => /payRecipients/.test(t)), r);
+  // ---------- Правки без прикреплённой задачи ----------
+  const opts = await popup.evaluate(() => [...document.querySelectorAll('#filter-jira option')].map((o) => [o.value, o.textContent]));
+  check('в фильтре «Артефакт Jira» есть «— без задачи —»', opts.some(([v, t]) => v === '__none__' && /без задачи/.test(t)), opts);
+  r = await hl({ jira: '__none__' });
+  const shownNone = await popup.evaluate(() => [...document.querySelectorAll('#entries-list .entry .entry__meta')].map((m) => m.textContent));
+  check('«без задачи» → в списке только версия 12, подсвечена её бирюзовая правка', shownNone.length === 1 && /Версия 12/.test(shownNone[0]) && r.found.length === 1 && /статус заявления плашкой/.test(r.found[0]), { shownNone, r });
+  const noIssueMark = await popup.evaluate(() => document.querySelector('#entries-list .entry__no-issue')?.textContent);
+  check('у записи пометка «задача не прикреплена»', noIssueMark === 'задача не прикреплена', noIssueMark);
+  r = await hl({ author: 'Иванов Иван Иванович (Ivan Ivanov)' });
+  check('автор Иванов (версия 11 с задачей + версия 12 без задачи) → 2 правки', r.found.length === 2 && r.found.some((t) => /Сохранение данных персоны/.test(t)) && r.found.some((t) => /статус заявления плашкой/.test(t)), r);
+  // Клик по записи версии 12 в списке
+  await popup.click('#btn-clear'); await popup.waitForTimeout(400);
+  await popup.locator('#entries-list .entry', { hasText: 'Версия 12' }).click();
+  await popup.waitForFunction(() => { const s = document.getElementById('highlight-status'); return !s.hidden && !/Поиск/.test(s.textContent); }, null, { timeout: 15000 });
+  await page.waitForTimeout(300);
+  const clicked = {
+    filters: await popup.evaluate(() => ['filter-date', 'filter-author', 'filter-jira'].map((i) => document.getElementById(i).value)),
+    found: await page.evaluate(() => [...document.querySelectorAll('#main-content .cfa-highlight')].map((w) => w.textContent.trim())),
+  };
+  check('клик по записи 12 → фильтры подставлены, подсвечена её правка', clicked.filters.join('|') === '2026-09-10|Иванов Иван Иванович (Ivan Ivanov)|__none__' && clicked.found.length === 1 && /статус заявления/.test(clicked.found[0]), clicked);
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: path.join(OUT, 'dc-no-issue.png') });
+  await popup.screenshot({ path: path.join(OUT, 'dc-no-issue-popup.png'), fullPage: true });
+
   r = await hl({});
-  check('без фильтров → 4 правки, без ложных: ссылки, @упоминания, даты, заголовок блока, код', r.found.length === 4
+  check('без фильтров → 5 правок, без ложных: ссылки, @упоминания, даты, заголовок блока, код', r.found.length === 5
     && !r.found.some((t) => /Морозова|Показать пример|POST|1 мар\./.test(t)), r);
 
   // Выгрузка в Word: цвет и зачёркивание

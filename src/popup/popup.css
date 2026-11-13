@@ -291,3 +291,8 @@ body.is-settings .tabs { display: none; }
 /* --- Отменённая правка (описание в истории зачёркнуто) --- */
 .entry__cancelled { margin-left: 4px; padding: 0 5px; border-radius: 8px; background: #ffebe6; color: #de350b; font-size: 10px; font-weight: 700; }
 .entry__desc.is-cancelled { text-decoration: line-through; opacity: .8; }
+
+/* --- Запись без задачи; клик по записи подсвечивает её правки --- */
+.entry__no-issue { color: var(--c-muted); font-size: 11px; font-style: italic; }
+#entries-list .entry.is-clickable { cursor: pointer; }
+#entries-list .entry.is-clickable:hover { background: #f4f8ff; }

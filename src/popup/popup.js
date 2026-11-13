@@ -9,7 +9,7 @@
 import './popup.css';
 import { MESSAGE_TYPES, PAGE_MODES, STORAGE_KEYS } from '../lib/constants';
 import { findAnalysis, idKey, urlKey } from '../lib/analysis-store';
-import { activeFilters, buildHighlightPlan, filterEntries } from '../lib/filters';
+import { NO_ISSUE, activeFilters, buildHighlightPlan, filterEntries } from '../lib/filters';
 import { getItem, setItem } from '../lib/storage';
 import { getByPath, getSettings, normalizeSettings, resetSettings, saveSettings, setByPath } from '../lib/settings';
 import { debounce, log } from '../lib/utils';
@@ -282,6 +282,20 @@ function renderEntry(entry) {
     keys.className = 'entry__issue';
     keys.textContent = entry.jiraKeys.join(', ');
     foot.appendChild(keys);
+  } else {
+    const none = document.createElement('span');
+    none.className = 'entry__no-issue';
+    none.textContent = 'задача не прикреплена';
+    foot.appendChild(none);
+  }
+  // Клик по записи — подсветить правки именно этой версии
+  if (entry.color) {
+    li.classList.add('is-clickable');
+    li.title = 'Подсветить правки этой версии';
+    li.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      highlightEntry(entry).catch((err) => log.error('Ошибка подсветки версии:', err));
+    });
   }
   if (entry.versionUrl) {
     const link = document.createElement('a');
@@ -316,7 +330,12 @@ function renderAnalysis(data) {
 
   fillSelect($('filter-date'), data.filterOptions.dates);
   fillSelect($('filter-author'), data.filterOptions.authors.map((a) => ({ value: a, label: a })));
-  fillSelect($('filter-jira'), data.filterOptions.jiraKeys.map((k) => ({ value: k, label: k })));
+  const jiraOptions = data.filterOptions.jiraKeys.map((k) => ({ value: k, label: k }));
+  // Записи, где аналитик уже внёс правки цветом, а задачу ещё не прикрепил
+  if (data.entries.some((e) => !(e.jiraKeys || []).length)) {
+    jiraOptions.push({ value: NO_ISSUE, label: '— без задачи (не прикреплена) —' });
+  }
+  fillSelect($('filter-jira'), jiraOptions);
 
   $('filters').disabled = false;
   $('btn-export').disabled = false;
@@ -484,6 +503,7 @@ async function highlight() {
 function displayFilters() {
   const f = activeFilters(readFilters(), settings);
   if (f.date) f.date = $('filter-date')?.selectedOptions[0]?.textContent || f.date;
+  if (f.jira === NO_ISSUE) f.jira = 'без задачи';
   return f;
 }
 
@@ -831,6 +851,26 @@ async function highlightTask() {
     colors: null, issueKey: key, knownKeys, autoExpand: settings.autoExpand !== false, showCounter: settings.showCounter !== false,
   });
   setHighlightStatus(res?.ok && res.count ? `Правки рядом с ${key}: ${res.count}` : `Цветных правок рядом с ${key} не найдено`, res?.count ? 'success' : 'warning');
+}
+
+/**
+ * Клик по записи истории: подставляет её дату, автора и задачу («без задачи», если не прикреплена)
+ * в фильтры и подсвечивает правки этой версии.
+ * @param {import('../lib/parser').HistoryEntry} entry - запись
+ * @returns {Promise<void>}
+ */
+async function highlightEntry(entry) {
+  const set = (id, value) => {
+    const select = $(id);
+    if (select && [...select.options].some((o) => o.value === value)) select.value = value;
+  };
+  set('filter-date', entry.dateISO || entry.date || '');
+  set('filter-author', entry.author || '');
+  set('filter-jira', entry.jiraKeys?.[0] || NO_ISSUE);
+  applyFilterVisibility();
+  renderEntries();
+  await saveFilters().catch(() => {});
+  await highlight();
 }
 
 /**

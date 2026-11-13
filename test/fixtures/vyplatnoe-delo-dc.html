@@ -17,6 +17,7 @@
       --ds-text-accent-orange: #ff9966;
       --ds-text-accent-red: #de350b;
       --ds-text-accent-green: #5b7f24;
+      --ds-text-accent-teal: #00a3bf;
     }
     body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ds-text); }
     #main { max-width: 1100px; margin: 0 auto; padding: 16px 24px 60px; }
@@ -64,6 +65,11 @@
   <td class="confluenceTd"><p><span style="color: var(--ds-text-accent-orange);">Добавлен шаг 5 сохранение персоны в альтернативном сценарии 0</span></p></td>
   <td class="confluenceTd"><a class="confluence-userlink user-mention current-user-mention" data-username="iivanov" href="#">Иванов Иван Иванович (Ivan Ivanov)</a></td><td class="confluenceTd"></td>
   <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-9070">PLATFORM-9070</a> <span class="summary">[WEB] 2. Выплатное дело. Детали события - передавать persons.documents.isDeleted при сохранении данных персоны</span> <span class="aui-lozenge">ТЕСТИРОВАНИЕ</span></span></td></tr>
+<!-- Версия 12: аналитик внёс правки цветом, но задачу ещё не прикрепил (колонка «Артефакт Jira» пустая) -->
+<tr><td class="confluenceTd">12</td><td class="confluenceTd"><time datetime="2026-09-10" class="date-past">10 сент. 2026 г.</time></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"><p><span style="color: var(--ds-text-accent-teal);">Показывать статус заявления в сайд-баре</span></p></td>
+  <td class="confluenceTd"><a class="confluence-userlink user-mention current-user-mention" data-username="iivanov" href="#">Иванов Иван Иванович (Ivan Ivanov)</a></td><td class="confluenceTd"></td>
+  <td class="confluenceTd"></td></tr>
 </tbody></table></div>
 
 <h2>Варианты использования</h2>
@@ -101,6 +107,8 @@
 <h3>Сайд-бар</h3>
 <p><span style="color: var(--ds-text-accent-green, rgb(101, 132, 41));">Поле «Создал»: фамилия и инициалы пользователя, который зарегистрировал заявление.</span></p>
 <p><span class="jira-issue"><a href="https://jira.example/browse/PROD-54724">PROD-54724</a> <span class="summary">Создал</span> <span class="aui-lozenge">ВЫПОЛНЕНА</span></span></p>
+<p>Под полем «Создал» отображается дата регистрации.</p>
+<p><span style="color: var(--ds-text-accent-teal);">Под датой регистрации показывать текущий статус заявления плашкой (цвет по справочнику статусов).</span></p>
 
 <h3>Пример запроса</h3>
 <div class="expand-container"><div class="expand-control"><span class="expand-control-text">Показать пример запроса</span></div>

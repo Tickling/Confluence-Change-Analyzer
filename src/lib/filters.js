@@ -6,11 +6,14 @@
  * дополнительное условие «рядом с правкой есть ссылка на эту задачу».
  */
 
+/** Значение фильтра «Артефакт Jira»: записи, к которым задача ещё не прикреплена */
+export const NO_ISSUE = '__none__';
+
 /**
  * @typedef {Object} FilterValues
  * @property {string} [date] - дата (YYYY-MM-DD или текст, если дата не распознана)
  * @property {string} [author] - автор
- * @property {string} [jira] - ключ задачи
+ * @property {string} [jira] - ключ задачи или NO_ISSUE («без задачи»)
  */
 
 /**
@@ -38,7 +41,9 @@ export function activeFilters(filters = {}, settings = { filters: {} }) {
 export function filterEntries(entries, filters = {}) {
   return entries.filter((e) => (!filters.date || (e.dateISO || e.date) === filters.date)
     && (!filters.author || e.author === filters.author)
-    && (!filters.jira || (e.jiraKeys || []).includes(filters.jira)));
+    && (!filters.jira || (filters.jira === NO_ISSUE
+      ? !(e.jiraKeys || []).length
+      : (e.jiraKeys || []).includes(filters.jira))));
 }
 
 /**
@@ -84,7 +89,8 @@ export function buildHighlightPlan(allEntries, filters, settings = {}) {
     payload: {
       colors,
       cancelled,
-      issueKey: filters.jira || null,
+      // «Без задачи» — правки ищутся только по цвету записи
+      issueKey: filters.jira && filters.jira !== NO_ISSUE ? filters.jira : null,
       knownKeys,
       autoExpand: settings.autoExpand !== false,
       showCounter: settings.showCounter !== false,
