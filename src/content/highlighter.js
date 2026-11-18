@@ -16,7 +16,7 @@
  */
 import { HIGHLIGHT_CLASS, HIGHLIGHT_STRATEGY } from '../lib/constants';
 import { findHistoryTables } from '../lib/parser';
-import { colorToHex, computedColor, debounce, extractIssueKeys, getElementColor, log, renderedTextColor, runIdle } from '../lib/utils';
+import { colorDistance, colorToHex, computedColor, debounce, extractIssueKeys, getElementColor, log, renderedTextColor, runIdle } from '../lib/utils';
 import { collapseBlocks, expandAll, splitByMatches } from './expander';
 
 /** Элементы, текст которых не считается правкой (макросы задач, служебные элементы) */
@@ -43,6 +43,15 @@ const COLORED_RATIO = 0.8;
 const COLOR_TOLERANCE = 10;
 
 /**
+ * До какого расстояния оттенок считается «похожим, но другим»: такой текст рядом с правкой —
+ * вероятно, часть правки, которую не перекрасили (например, 227D9B вместо 2898BD).
+ */
+const NEAR_COLOR_DISTANCE = 80;
+
+/** Блоки текста, которые отмечаются целиком при похожем оттенке */
+const NEAR_BLOCK = 'p, li, h1, h2, h3, h4, h5, h6, pre, blockquote';
+
+/**
  * @typedef {Object} HighlightOptions
  * @property {string[]|null} [colors] - цвета правок (HEX без #); null — все не нейтральные цвета
  * @property {string|null} [issueKey] - оставить только правки, рядом с которыми есть эта задача
@@ -51,6 +60,9 @@ const COLOR_TOLERANCE = 10;
  * @property {boolean} [showCounter=true] - показывать панель «Найдено N совпадений»
  * @property {boolean} [autoExpand=true] - раскрывать свёрнутые блоки перед поиском
  * @property {Array<{color: string, label: string}>} [cancelled] - цвета отменённых правок и подпись для рамки
+ * @property {Object<string, string>} [colorAliases] - второстепенный оттенок записи → её основной цвет
+ * @property {string[]} [knownColors] - цвета всех записей истории (похожим оттенком они не считаются)
+ * @property {boolean} [nearMiss=true] - отмечать рядом с правками текст похожего, но другого оттенка
  */
 
 /**
@@ -61,6 +73,8 @@ const COLOR_TOLERANCE = 10;
  * @property {string[]} issueKeys - задачи рядом с правкой
  * @property {string} text - текст правки
  * @property {string|null} [cancelledLabel] - подпись, если правка отменена («Отменено · версия 10»)
+ * @property {string|null} [nearLabel] - подпись для текста похожего, но другого оттенка («≈ оттенок …»)
+ * @property {string} [expected] - цвет из истории, на который похож оттенок (для nearLabel)
  */
 
 /* ======================== Цвета ======================== */
@@ -247,12 +261,26 @@ export async function findChanges(root, opts = {}) {
   const total = new Map();
   const colored = new Map();
   const matched = [];
+  const near = [];
   const base = computedColor(root);
+  const knownColors = (opts.knownColors || []).map((c) => c.toUpperCase());
   for (const node of nodes) {
     const len = node.nodeValue.trim().length;
     // Правка может быть отмечена цветом текста или заливкой фона (маркером)
-    const color = matchColor(getTextNodeColor(node, root, base), targets) || matchColor(getTextNodeBackground(node, root), targets);
+    const found = matchColor(getTextNodeColor(node, root, base), targets) || matchColor(getTextNodeBackground(node, root), targets);
+    // Оттенки одной записи истории считаются одним цветом правки
+    const color = found ? (opts.colorAliases?.[found] || found) : null;
     if (color) matched.push({ node, color });
+    else if (targets && opts.nearMiss !== false) {
+      // Похожий, но другой оттенок (и не цвет другой записи истории) — кандидат «забыли перекрасить»
+      const own = getTextNodeColor(node, root, base);
+      if (own && !isNeutralColor(own) && !knownColors.some((k) => colorDistance(k, own) <= COLOR_TOLERANCE)) {
+        const closest = targets.map((t) => [t, colorDistance(t, own)]).sort((a, b) => a[1] - b[1])[0];
+        if (closest[1] > COLOR_TOLERANCE && closest[1] <= NEAR_COLOR_DISTANCE) {
+          near.push({ node, color: own, expected: opts.colorAliases?.[closest[0]] || closest[0] });
+        }
+      }
+    }
     for (let el = node.parentElement; el; el = el.parentElement) {
       total.set(el, (total.get(el) || 0) + len);
       if (color) colored.set(el, (colored.get(el) || 0) + len);
@@ -292,7 +320,8 @@ export async function findChanges(root, opts = {}) {
     const color = blocks.get(el) || rows.get(el);
     const last = groups[groups.length - 1];
     const lastEl = last?.elements[last.elements.length - 1];
-    if (last && last.color === color && adjacentNext(lastEl) === el) {
+    // Строки таблицы (шаги) не склеиваем: каждая — отдельная правка
+    if (last && last.color === color && el.tagName !== 'TR' && adjacentNext(lastEl) === el) {
       last.elements.push(el);
     } else {
       groups.push({ elements: [el], color });
@@ -340,7 +369,64 @@ export async function findChanges(root, opts = {}) {
     };
   });
 
-  return opts.issueKey ? result.filter((g) => g.issueKeys.includes(opts.issueKey)).map((g, i) => ({ ...g, index: i })) : result;
+  const final = opts.issueKey ? result.filter((g) => g.issueKeys.includes(opts.issueKey)).map((g, i) => ({ ...g, index: i })) : result;
+  final.nearMisses = findNearMisses(near, final, root);
+  return final;
+}
+
+/**
+ * Текст похожего, но другого оттенка рядом с найденными правками: в той же строке таблицы
+ * или в том же контейнере. Это подсказка «возможно, часть правки не перекрасили».
+ * @param {Array<{node: Text, color: string, expected: string}>} near - узлы похожего оттенка
+ * @param {ChangeGroup[]} groups - найденные правки
+ * @param {Element} root - корень документа
+ * @returns {ChangeGroup[]} блоки похожего оттенка (с nearLabel)
+ */
+function findNearMisses(near, groups, root) {
+  if (!near.length || !groups.length) return [];
+  const els = groups.flatMap((g) => g.elements);
+  const inChange = (n) => els.some((el) => el.contains(n));
+  const blocks = new Map();
+  near.forEach(({ node, color, expected }) => {
+    // Внутри рамки правки (например, ссылка старого оттенка в шаге, обведённом целиком) —
+    // отмечаем только сам кусок другого оттенка
+    if (inChange(node)) {
+      let piece = node.parentElement;
+      while (piece.parentElement && isInline(piece.parentElement) && !els.includes(piece.parentElement)) piece = piece.parentElement;
+      if (!blocks.has(piece)) blocks.set(piece, { color, expected });
+      return;
+    }
+    let block = node.parentElement.closest(NEAR_BLOCK) || node.parentElement.closest('td, th');
+    if (!block || !root.contains(block)) return;
+    // В абзаце есть и правильно покрашенный текст — отмечаем только кусок другого оттенка
+    if (els.some((el) => block.contains(el))) {
+      let piece = node.parentElement;
+      while (piece.parentElement && piece.parentElement !== block && !els.some((el) => piece.parentElement.contains(el))) {
+        piece = piece.parentElement;
+      }
+      block = piece;
+    }
+    if (blocks.has(block)) return;
+    const tr = block.closest('tr');
+    const container = block.parentElement;
+    const related = (tr && root.contains(tr) && els.some((el) => tr.contains(el)))
+      || els.some((el) => el.parentElement === container || container?.contains(el));
+    if (related) blocks.set(block, { color, expected });
+  });
+  const list = [...blocks.keys()].filter((b) => ![...blocks.keys()].some((o) => o !== b && o.contains(b)));
+  return list.map((b) => {
+    const { color, expected } = blocks.get(b);
+    return {
+      index: -1,
+      elements: [b],
+      color,
+      expected,
+      issueKeys: [],
+      text: b.textContent.replace(/\s+/g, ' ').trim(),
+      cancelledLabel: null,
+      nearLabel: `≈ оттенок #${color}, в истории #${expected}`,
+    };
+  });
 }
 
 /* ======================== Подсветка: обёртка (просмотр) ======================== */
@@ -364,28 +450,32 @@ function isInline(el) {
 function wrapGroup(group) {
   const first = group.elements[0];
   const doc = first.ownerDocument;
-  const cancelled = Boolean(group.cancelledLabel);
-  if (NO_WRAP_PARENTS.has(first.parentElement?.tagName) || first.tagName === 'TR' || first.tagName === 'LI') {
+  // Особые рамки: отменённая правка или похожий, но другой оттенок
+  const variant = group.nearLabel ? 'near' : (group.cancelledLabel ? 'cancelled' : null);
+  const label = group.nearLabel || group.cancelledLabel;
+  const cancelled = Boolean(variant);
+  if (NO_WRAP_PARENTS.has(first.parentElement?.tagName) || first.tagName === 'TR' || first.tagName === 'LI' || /^(TD|TH)$/.test(first.tagName)) {
     group.elements.forEach((el) => {
       el.classList.add(HIGHLIGHT_CLASS);
-      if (cancelled) el.classList.add(`${HIGHLIGHT_CLASS}--cancelled`);
+      if (variant) el.classList.add(`${HIGHLIGHT_CLASS}--${variant}`);
     });
-    // Подпись «Отменено»: у строки таблицы — на её первой ячейке (у <tr> псевдоэлемент не отображается)
-    const labelHost = cancelled ? (first.tagName === 'TR' ? first.cells?.[0] : first) : null;
+    // Подпись: у строки таблицы — на её первой ячейке (у <tr> псевдоэлемент не отображается)
+    const labelHost = variant ? (first.tagName === 'TR' ? first.cells?.[0] : first) : null;
     if (labelHost) {
-      labelHost.dataset.cfaLabel = group.cancelledLabel;
-      if (labelHost !== first) labelHost.classList.add('cfa-cancel-label');
+      labelHost.dataset.cfaLabel = label;
+      if (labelHost !== first) labelHost.classList.add('cfa-cancel-label', `cfa-cancel-label--${variant}`);
     }
     return {
       targets: group.elements,
       undo: () => {
         group.elements.forEach((el) => {
-          el.classList.remove(HIGHLIGHT_CLASS, `${HIGHLIGHT_CLASS}--active`, `${HIGHLIGHT_CLASS}--cancelled`);
+          el.classList.remove(HIGHLIGHT_CLASS, `${HIGHLIGHT_CLASS}--active`, `${HIGHLIGHT_CLASS}--cancelled`, `${HIGHLIGHT_CLASS}--near`);
           if (!el.classList.length) el.removeAttribute('class');
+          if (el === labelHost) delete el.dataset.cfaLabel;
         });
         if (labelHost) {
           delete labelHost.dataset.cfaLabel;
-          labelHost.classList.remove('cfa-cancel-label');
+          labelHost.classList.remove('cfa-cancel-label', `cfa-cancel-label--${variant}`);
           if (!labelHost.classList.length) labelHost.removeAttribute('class');
         }
       },
@@ -395,9 +485,11 @@ function wrapGroup(group) {
   const wrapper = doc.createElement(inline ? 'span' : 'div');
   wrapper.className = inline ? `${HIGHLIGHT_CLASS} ${HIGHLIGHT_CLASS}--inline` : HIGHLIGHT_CLASS;
   if (cancelled) {
-    wrapper.classList.add(`${HIGHLIGHT_CLASS}--cancelled`);
-    wrapper.dataset.cfaLabel = group.cancelledLabel;
-    wrapper.title = `${group.cancelledLabel}: описание этой версии в «Истории изменений» зачёркнуто`;
+    wrapper.classList.add(`${HIGHLIGHT_CLASS}--${variant}`);
+    wrapper.dataset.cfaLabel = label;
+    wrapper.title = variant === 'near'
+      ? `Похожий, но другой оттенок: #${group.color} (в «Истории изменений» — #${group.expected}). Возможно, часть правки не перекрасили.`
+      : `${label}: описание этой версии в «Истории изменений» зачёркнуто`;
   }
   wrapper.dataset.cfaIndex = String(group.index);
   first.before(wrapper);
@@ -427,7 +519,10 @@ class OverlayLayer {
     this.boxes = groups.map((g) => {
       const box = document.createElement('div');
       box.className = 'cfa-overlay-box';
-      if (g.cancelledLabel) {
+      if (g.nearLabel) {
+        box.classList.add('cfa-overlay-box--near');
+        box.dataset.cfaLabel = g.nearLabel;
+      } else if (g.cancelledLabel) {
         box.classList.add('cfa-overlay-box--cancelled');
         box.dataset.cfaLabel = g.cancelledLabel;
       }
@@ -554,7 +649,7 @@ const state = {
  * @param {number} count - число найденных правок
  * @returns {void}
  */
-function renderCounter(count, expandedCount = 0, cancelledCount = 0) {
+function renderCounter(count, expandedCount = 0, cancelledCount = 0, nearCount = 0) {
   state.counter?.remove();
   const panel = document.createElement('div');
   panel.className = 'cfa-counter';
@@ -565,6 +660,13 @@ function renderCounter(count, expandedCount = 0, cancelledCount = 0) {
     <button class="cfa-counter__btn" data-act="next" title="Следующее">↓</button>
     <button class="cfa-counter__btn" data-act="close" title="Убрать подсветку">✕</button>`;
   panel.querySelector('.cfa-counter__text').textContent = `Найдено ${count} ${pluralMatches(count)}`;
+  if (nearCount) {
+    const n = document.createElement('span');
+    n.className = 'cfa-counter__hint cfa-counter__hint--near';
+    n.textContent = `≈ другой оттенок: ${nearCount}`;
+    n.title = 'Рядом с правками есть текст похожего, но другого цвета — возможно, его забыли перекрасить';
+    panel.querySelector('.cfa-counter__text').after(n);
+  }
   if (cancelledCount) {
     const c = document.createElement('span');
     c.className = 'cfa-counter__hint cfa-counter__hint--cancelled';
@@ -685,12 +787,16 @@ export async function applyHighlight(ctx, opts = {}, silent = false) {
     state.expanded = keep;
   }
 
+  // Похожий, но другой оттенок рядом с правками — отдельные рамки (в счётчик правок не входят)
+  const near = groups.nearMisses || [];
   if (ctx.strategy === HIGHLIGHT_STRATEGY.WRAP) {
-    state.wraps = groups.map(wrapGroup);
+    state.wraps = [...groups, ...near].map(wrapGroup);
   } else {
-    state.overlay = new OverlayLayer(ctx, groups);
+    state.overlay = new OverlayLayer(ctx, [...groups, ...near]);
   }
-  if (opts.showCounter !== false) renderCounter(groups.length, state.expanded.length, groups.filter((g) => g.cancelledLabel).length);
+  if (opts.showCounter !== false) {
+    renderCounter(groups.length, state.expanded.length, groups.filter((g) => g.cancelledLabel).length, near.length);
+  }
   watchEditor();
   if (groups.length && !silent) goTo(0);
   log.info(`Подсвечено правок: ${groups.length} (режим: ${ctx.mode}, способ: ${ctx.strategy})`);

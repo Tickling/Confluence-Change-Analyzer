@@ -47,6 +47,16 @@ export function filterEntries(entries, filters = {}) {
 }
 
 /**
+ * Цвета правок записи: все оттенки описания (основной — первый) и цвет заливки.
+ * @param {import('./parser').HistoryEntry} e - запись
+ * @returns {string[]} цвета HEX без #
+ */
+export function entryColors(e) {
+  const text = e.colors?.length ? e.colors : [e.color];
+  return [...new Set([...text, e.backgroundColor].filter(Boolean))];
+}
+
+/**
  * @typedef {Object} HighlightPlan
  * @property {boolean} ok - можно ли подсвечивать
  * @property {string|null} reason - почему нельзя (для сообщения пользователю)
@@ -67,7 +77,14 @@ export function buildHighlightPlan(allEntries, filters, settings = {}) {
     return { ok: false, reason: 'Нет записей «Истории изменений» по выбранным фильтрам', entries, payload: null };
   }
   // Цвет текста описания и (если есть) цвет его заливки — правка в документе может быть отмечена любым из них
-  const colors = [...new Set(entries.flatMap((e) => [e.color, e.backgroundColor]).filter(Boolean))];
+  const colors = [...new Set(entries.flatMap(entryColors))];
+  // Оттенки одной записи — одна правка: второстепенные цвета сводятся к основному цвету записи
+  const primaries = new Set(entries.map((e) => entryColors(e)[0]).filter(Boolean));
+  const colorAliases = {};
+  entries.forEach((e) => {
+    const [primary, ...rest] = entryColors(e);
+    rest.forEach((c) => { if (!primaries.has(c) && !colorAliases[c]) colorAliases[c] = primary; });
+  });
   if (!colors.length) {
     return {
       ok: false,
@@ -88,6 +105,9 @@ export function buildHighlightPlan(allEntries, filters, settings = {}) {
     entries,
     payload: {
       colors,
+      colorAliases,
+      // Цвета всех версий: похожим оттенком «соседа» не считаются цвета других записей истории
+      knownColors: [...new Set(allEntries.flatMap(entryColors))],
       cancelled,
       // «Без задачи» — правки ищутся только по цвету записи
       issueKey: filters.jira && filters.jira !== NO_ISSUE ? filters.jira : null,

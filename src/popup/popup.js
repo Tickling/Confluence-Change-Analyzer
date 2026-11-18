@@ -266,7 +266,16 @@ function renderEntry(entry) {
   swatch.style.background = color || 'transparent';
   swatch.title = color ? `Цвет правок: ${color}` : 'Описание без цвета — правки в документе не выделены цветом';
   if (!color) swatch.classList.add('is-empty');
-  meta.append(swatch, document.createTextNode(`Версия ${entry.version} · ${entry.date || '—'} · ${entry.author || '—'}`));
+  meta.appendChild(swatch);
+  // Описание написано несколькими оттенками — показываем каждый
+  (entry.colors || []).slice(1).forEach((c) => {
+    const extra = document.createElement('span');
+    extra.className = 'entry__color';
+    extra.style.background = `#${c}`;
+    extra.title = `Ещё оттенок правок: #${c}`;
+    meta.appendChild(extra);
+  });
+  meta.append(document.createTextNode(`Версия ${entry.version} · ${entry.date || '—'} · ${entry.author || '—'}`));
   if (entry.cancelled) meta.appendChild(cancelledBadge());
 
   const desc = document.createElement('div');
@@ -480,9 +489,14 @@ async function highlight() {
     const res = await sendHighlight(MESSAGE_TYPES.APPLY_HIGHLIGHT, plan.payload);
     if (!res?.ok) throw new Error(res?.error || 'Не удалось подсветить правки');
     lastHighlight = { ...res, entries: plan.entries, filters: readFilters() };
+    const near = res.near || [];
+    // Подсказка: рядом с правками текст похожего, но другого оттенка — вероятно, его не перекрасили
+    const nearHint = near.length
+      ? `\n⚠ Рядом с правками похожий, но другой оттенок: ${near.length} (${[...new Set(near.map((n) => `#${n.color} вместо #${n.expected}`))].join(', ')}) — возможно, часть правки не перекрасили. На странице отмечено оранжевым пунктиром.`
+      : '';
     if (res.count) {
       const cancelled = (res.items || []).filter((i) => i.cancelled).length;
-      setHighlightStatus(`На странице найдено: ${res.count} ${pluralChanges(res.count)}${cancelled ? ` · из них отменено: ${cancelled}` : ''}`, 'success');
+      setHighlightStatus(`На странице найдено: ${res.count} ${pluralChanges(res.count)}${cancelled ? ` · из них отменено: ${cancelled}` : ''}${nearHint}`, near.length ? 'warning' : 'success');
     } else {
       setHighlightStatus('Правок такого цвета на странице не найдено', 'warning');
     }

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8" />
+<!-- Тестовая страница по образцу «Сценарий CLO-13.01. Сохранение документов из ЛКК в заявление» (версия 34: описание двумя оттенками).
+     ФИО вымышленные. См. test/e2e/clo-13-01.test.cjs -->
+<meta name="ajs-page-id" content="461230011" />
+<meta name="ajs-page-title" content="Сценарий CLO-13.01. Сохранение документов из ЛКК в заявление Импульса" />
+<meta name="confluence-base-url" content="https://confluence.example" />
+<title>Сценарий CLO-13.01 - Confluence</title>
+<style>
+ body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #172b4d; }
+ #main { max-width: 1000px; margin: 0 auto; padding: 16px 24px 60px; }
+ table.confluenceTable { border-collapse: collapse; width: 100%; margin: 6px 0 12px; }
+ .confluenceTh, .confluenceTd { border: 1px solid #c1c7d0; padding: 6px 10px; vertical-align: top; text-align: left; }
+ .confluenceTh { background: #f4f5f7; } a { color: #0c66e4; text-decoration: none; }
+ .jira-issue { display: inline-block; padding: 2px 6px; border-radius: 3px; background: #f4f5f7; font-size: 12px; }
+ .jira-issue .summary { color: #172b4d; } .aui-lozenge { font-size: 10px; font-weight: 700; color: #42526e; }
+ .user-mention { color: #0c66e4; background: #e9f2ff; border-radius: 10px; padding: 0 4px; }
+ .user-mention.current-user-mention { color: #fff; background: #0c66e4; }
+ time { background: #f4f5f7; border-radius: 3px; padding: 0 4px; }
+</style></head>
+<body><div id="main">
+<h1 id="title-text">Сценарий CLO-13.01. Сохранение документов из ЛКК в заявление Импульса</h1>
+<div id="main-content" class="wiki-content">
+<h2>История изменений</h2>
+<div class="table-wrap"><table class="confluenceTable"><tbody>
+<tr><th class="confluenceTh">№</th><th class="confluenceTh">Дата изменения</th><th class="confluenceTh">Причина изменения</th><th class="confluenceTh">Описание</th><th class="confluenceTh">Автор</th><th class="confluenceTh">Ревью</th><th class="confluenceTh">Артефакт Jira</th></tr>
+<tr><td class="confluenceTd">1</td><td class="confluenceTd"><time datetime="2026-03-02">2 мар. 2026 г.</time></td><td class="confluenceTd"></td><td class="confluenceTd"><p>Создан новый документ</p></td>
+ <td class="confluenceTd"><a class="confluence-userlink user-mention" href="#">Петрова Анна Сергеевна (Anna Petrova)</a></td><td class="confluenceTd"></td>
+ <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-6001">PLATFORM-6001</a> <span class="aui-lozenge">РЕШЕННЫЕ</span></span></td></tr>
+<tr><td class="confluenceTd">4</td><td class="confluenceTd"><time datetime="2026-07-08">8 июл. 2026 г.</time></td><td class="confluenceTd"></td><td class="confluenceTd"><p><span style="color: rgb(130, 112, 219);">Добавлено получение данных заявления по id (CLAP-19)</span></p></td>
+ <td class="confluenceTd"><a class="confluence-userlink user-mention" href="#">Петрова Анна Сергеевна (Anna Petrova)</a></td><td class="confluenceTd"></td>
+ <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-9301">PLATFORM-9301</a> <span class="aui-lozenge">ВЫПОЛНЕНО</span></span></td></tr>
+<tr><td class="confluenceTd">5</td><td class="confluenceTd"><time datetime="2026-09-15">15 сент. 2026 г.</time></td><td class="confluenceTd"></td><td class="confluenceTd"><p><span style="color: rgb(0, 85, 204);">Расширен атрибутивный состав для передачи наименования Иного документа</span></p></td>
+ <td class="confluenceTd"><a class="confluence-userlink user-mention" href="#">Петрова Анна Сергеевна (Anna Petrova)</a></td><td class="confluenceTd"></td>
+ <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-11002">PLATFORM-11002</a> <span class="aui-lozenge">РЕШЕННЫЕ</span></span></td></tr>
+<tr><td class="confluenceTd">6</td><td class="confluenceTd"><time datetime="2026-11-02">2 нояб. 2026 г.</time></td><td class="confluenceTd"></td><td class="confluenceTd"><p><span style="color: rgb(34, 125, 155);">Добавлены шаги 6–9: определение и сохранение признака предоставления</span><span style="color: rgb(32, 106, 131);"> полного комплекта документов isFullPkd по правилам справочника DocumentRules.</span></p></td>
+ <td class="confluenceTd"><a class="confluence-userlink user-mention current-user-mention" href="#">Иванов Иван Иванович (Ivan Ivanov)</a></td><td class="confluenceTd"></td>
+ <td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-14298">PLATFORM-14298</a> - <span class="summary">[CORE] Доработка сценария CLO-13.01: определение и сохранение признака полного комплекта документов (isFullPkd)</span> <span class="aui-lozenge">ЗАБЛОКИРОВАНА</span></span></td></tr>
+</tbody></table></div>
+<h2>Описание алгоритма</h2>
+<div class="table-wrap"><table class="confluenceTable"><tbody>
+<tr><th class="confluenceTh">№</th><th class="confluenceTh">Описание шага сценария</th><th class="confluenceTh">Комментарий</th></tr>
+<tr><td class="confluenceTd">5</td><td class="confluenceTd"><p>Получить данные по документам после сохранения.</p></td><td class="confluenceTd"></td></tr>
+<tr id="step6"><td class="confluenceTd">6</td><td class="confluenceTd">
+  <p><span style="color: rgb(34, 125, 155);">Получить данные заявления</span></p>
+  <p><span style="color: rgb(34, 125, 155);">Вызвать <a href="#" style="color: rgb(34, 125, 155);">Сценарий CLAP-38.03. Получение данных Заявлений ВД и их объектов (GET)</a></span></p>
+  <p><span style="color: rgb(34, 125, 155);">с параметром searchParameter.claimApplicationId = claimApplicationId (входной параметр) и из полученного заявления (claimApplications) получить:</span></p>
+  <ul>
+    <li><span style="color: rgb(34, 125, 155);">riskElementary – код элементарного риска</span><span style="color: rgb(130, 112, 219);"> (<a href="#" style="color: rgb(130, 112, 219);">RiskElRiskReason / Комплексный справочник соответствий Рисков, Элементарных рисков и причин ущерба</a>);</span></li>
+    <li><span style="color: rgb(34, 125, 155);">claimDocuments – документы заявления (в т.ч. сохраненные на шаге 4).</span></li>
+  </ul>
+  <p><span style="color: rgb(34, 125, 155);">Если заявление найдено, перейти к следующему шагу;</span></p>
+  <p><span style="color: rgb(34, 125, 155);">Если вернулась ошибка, записать в лог сообщение "Не удалось получить данные заявления для определения isFullPkd" и перейти к шагу 10.</span></p>
+</td><td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-14298">PLATFORM-14298</a> - <span class="summary">[CORE] Доработка сценария CLO-13.01: определение и сохранение признака полного комплекта документов (isFullPkd)</span> <span class="aui-lozenge">НОВАЯ</span></span></td></tr>
+<tr id="step7"><td class="confluenceTd">7</td><td class="confluenceTd">
+  <p><span style="color: rgb(34, 125, 155);">Получить правила формирования ПКД</span></p>
+  <p><span style="color: rgb(34, 125, 155);">Из справочника </span><span style="color: rgb(32, 106, 131);"><a href="#" style="color: rgb(32, 106, 131);">DocumentRules / Комплексный справочник правил автоформирования ПКД</a></span> <span style="color: rgb(34, 125, 155);">получить все записи, где:</span></p>
+  <ul><li><span style="color: rgb(34, 125, 155);">поле “codeElRisk” = riskElementary заявления (шаг 6) или не заполнено;</span></li><li><span style="color: rgb(34, 125, 155);">поле “activeEntry” = true.</span></li></ul>
+  <p><span style="color: rgb(34, 125, 155);">Если записи найдены, перейти к следующему шагу;</span></p>
+  <p><span style="color: rgb(34, 125, 155);">Если подходящих записей не найдено, записать в лог "Не найдены правила ПКД", установить isFullPkd = true и перейти к шагу 9.</span></p>
+</td><td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-14298">PLATFORM-14298</a> - <span class="summary">[CORE] Доработка сценария CLO-13.01: определение и сохранение признака полного комплекта документов (isFullPkd)</span> <span class="aui-lozenge">НОВАЯ</span></span></td></tr>
+<tr id="step8"><td class="confluenceTd">8</td><td class="confluenceTd">
+  <p><span style="color: rgb(34, 125, 155);">Определить полноту комплекта документов</span></p>
+  <p><span style="color: rgb(34, 125, 155);">Сгруппировать записи, полученные на шаге 7, по полю “documentCategoryCode”. Категория считается обязательной, если в ней есть хотя бы одна запись с “isRequired” = true.</span></p>
+  <ul><li><span style="color: rgb(34, 125, 155);">Если предоставлены все обязательные категории, установить isFullPkd = true;</span></li><li><span style="color: rgb(34, 125, 155);">Если не предоставлена хотя бы одна обязательная категория, установить isFullPkd = false.</span></li></ul>
+</td><td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-14298">PLATFORM-14298</a> - <span class="summary">[CORE] Доработка сценария CLO-13.01: определение и сохранение признака полного комплекта документов (isFullPkd)</span> <span class="aui-lozenge">НОВАЯ</span></span></td></tr>
+<tr id="step9"><td class="confluenceTd">9</td><td class="confluenceTd">
+  <p><span style="color: rgb(34, 125, 155);">Сохранить признак предоставления полного комплекта документов</span></p>
+  <p><span style="color: rgb(34, 125, 155);">Вызвать </span><span style="color: rgb(32, 106, 131);"><a href="#" style="color: rgb(32, 106, 131);">Сценарий CLAP-02. Обновление данных заявления (UPDATE)</a></span> <span style="color: rgb(34, 125, 155);">со следующими параметрами:</span></p>
+  <ul><li><span style="color: rgb(34, 125, 155);">claimApplicationId = claimApplicationId (входной параметр);</span></li><li><span style="color: rgb(34, 125, 155);">isFullPkd — значение, определённое на шаге 7 или 8.</span></li></ul>
+</td><td class="confluenceTd"><span class="jira-issue"><a href="https://jira.example/browse/PLATFORM-14298">PLATFORM-14298</a> - <span class="summary">[CORE] Доработка сценария CLO-13.01: определение и сохранение признака полного комплекта документов (isFullPkd)</span> <span class="aui-lozenge">НОВАЯ</span></span></td></tr>
+<tr><td class="confluenceTd">10</td><td class="confluenceTd"><p>Вернуть ответ инициатору.</p></td><td class="confluenceTd"></td></tr>
+</tbody></table></div>
+</div></div></body></html>

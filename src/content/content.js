@@ -101,7 +101,14 @@ function onMessage(message, sender, sendResponse) {
       case MESSAGE_TYPES.APPLY_HIGHLIGHT: {
         const ctx = getContext();
         applyHighlight(ctx, message.payload || {})
-          .then((groups) => sendResponse({ ok: true, mode: ctx.mode, count: groups.length, items: summarize(groups) }))
+          .then((groups) => sendResponse({
+            ok: true,
+            mode: ctx.mode,
+            count: groups.length,
+            items: summarize(groups),
+            // Похожий, но другой оттенок рядом с правками — подсказка «возможно, не перекрасили»
+            near: (groups.nearMisses || []).map((n) => ({ color: n.color, expected: n.expected, text: n.text.slice(0, 200) })),
+          }))
           .catch((err) => {
             log.error('Ошибка подсветки:', err);
             sendResponse({ ok: false, error: String(err?.message || err) });

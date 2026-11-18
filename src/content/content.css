@@ -106,3 +106,31 @@ tr.cfa-highlight--cancelled { outline-style: dashed; }
 }
 .cfa-highlight--cancelled.cfa-highlight--inline::before { top: -16px; right: auto; left: 0; }
 .cfa-counter__hint--cancelled { color: #ffbdad; opacity: 1; }
+
+/* Похожий, но другой оттенок рядом с правкой: «возможно, забыли перекрасить» */
+.cfa-highlight--near { position: relative; }
+.cfa-highlight--near,
+.cfa-overlay-box--near {
+  border: 2px dotted #ff8b00 !important;
+  background: rgba(255, 139, 0, .08) !important;
+}
+tr.cfa-highlight--near { outline: 2px dotted #ff8b00; }
+.cfa-highlight--near:not(tr)::before,
+.cfa-cancel-label--near::before,
+.cfa-overlay-box--near::before {
+  content: attr(data-cfa-label);
+  position: absolute;
+  top: -11px;
+  right: 6px;
+  z-index: 1;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #ff8b00;
+  color: #fff;
+  font: 600 11px/16px -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.cfa-cancel-label--near::before { background: #ff8b00; content: attr(data-cfa-label); }
+.cfa-highlight--near.cfa-highlight--inline::before { top: -16px; right: auto; left: 0; }
+.cfa-counter__hint--near { color: #ffc400; opacity: 1; }

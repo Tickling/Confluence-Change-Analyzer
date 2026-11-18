@@ -22,7 +22,9 @@ import { colorToHex, computedColor, extractIssueKeys, getElementColor, log, norm
  * @property {string} author - автор
  * @property {string} review - ревью
  * @property {string[]} jiraKeys - ключи задач из колонки «Артефакт Jira»
- * @property {string|null} color - цвет текста описания (HEX без #)
+ * @property {string|null} color - основной цвет текста описания (HEX без #)
+ * @property {string[]} colors - все заметные цвета описания (основной — первый); описание бывает написано
+ *   несколькими оттенками, и правки в документе — любым из них
  * @property {string|null} backgroundColor - цвет фона описания (HEX без #)
  * @property {string|null} [versionUrl] - ссылка на версию страницы
  * @property {boolean} cancelled - правка отменена (описание в истории зачёркнуто)
@@ -200,6 +202,35 @@ function tableToGrid(table) {
  * @returns {string|null} цвет HEX или null
  */
 export function dominantColor(cell, kind = 'color') {
+  const weights = colorWeights(cell, kind);
+  let best = null;
+  weights.forEach((w, c) => { if (!best || w > weights.get(best)) best = c; });
+  return best;
+}
+
+/** Доля текста описания, начиная с которой оттенок считается цветом правки (а не случайным выделением) */
+const COLOR_SHARE = 0.15;
+
+/**
+ * Все заметные цвета текста ячейки — от основного к второстепенным.
+ * Описание версии бывает написано несколькими оттенками (например, 227D9B и 206A83),
+ * и правки в документе тогда внесены любым из них.
+ * @param {Element} cell - ячейка «Описание»
+ * @returns {string[]} цвета HEX без #
+ */
+export function significantColors(cell) {
+  const weights = [...colorWeights(cell, 'color')].sort((a, b) => b[1] - a[1]);
+  const total = weights.reduce((sum, [, w]) => sum + w, 0);
+  return weights.filter(([, w]) => w >= 3 && w >= total * COLOR_SHARE).map(([c]) => c);
+}
+
+/**
+ * Сколько текста ячейки написано каждым цветом (нейтральные цвета не учитываются).
+ * @param {Element} cell - ячейка
+ * @param {'color'|'background'} kind - цвет текста или цвет фона
+ * @returns {Map<string, number>} цвет → число символов
+ */
+function colorWeights(cell, kind) {
   const weights = new Map();
   const doc = cell.ownerDocument;
   // Обычный цвет текста ячейки — для случаев, когда цвет задан классом/темой, а не в разметке
@@ -216,9 +247,7 @@ export function dominantColor(cell, kind = 'color') {
     if (!color && kind === 'color') color = renderedTextColor(n, cell, base);
     if (color && !isNeutral(color, kind)) weights.set(color, (weights.get(color) || 0) + len);
   }
-  let best = null;
-  weights.forEach((w, c) => { if (!best || w > weights.get(best)) best = c; });
-  return best;
+  return weights;
 }
 
 /**
@@ -327,11 +356,13 @@ export function parseHistoryTableElement(table) {
       author: cellAuthor(get(row, 'author')),
       review: cellText(get(row, 'review')),
       jiraKeys: get(row, 'jira') ? extractIssueKeys(get(row, 'jira')) : [],
-      color: descCell ? dominantColor(descCell, 'color') : null,
+      color: null,
+      colors: descCell ? significantColors(descCell) : [],
       backgroundColor: descCell ? dominantColor(descCell, 'background') : null,
       versionUrl: null,
       cancelled: descCell ? isCancelledDescription(descCell) : false,
     };
+    entry.color = entry.colors[0] || null;
     // Пустые строки (шаблон таблицы без заполнения) не нужны
     if (!entry.description && !entry.date && !entry.author && !entry.jiraKeys.length) return;
     // Для диагностики: описание есть, а цвет не определён — в консоль разметку ячейки

@@ -296,3 +296,6 @@ body.is-settings .tabs { display: none; }
 .entry__no-issue { color: var(--c-muted); font-size: 11px; font-style: italic; }
 #entries-list .entry.is-clickable { cursor: pointer; }
 #entries-list .entry.is-clickable:hover { background: #f4f8ff; }
+
+/* Результат подсветки может быть в несколько строк (подсказка о похожем оттенке) */
+#highlight-status { white-space: pre-line; }
